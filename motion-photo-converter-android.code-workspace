@@ -1,0 +1,11 @@
+{
+  "folders": [{ "path": "." }],
+  "settings": {
+    "files.exclude": {
+      "**/.gradle": true,
+      "**/node_modules": true,
+      "**/build": true
+    }
+  }
+}
+

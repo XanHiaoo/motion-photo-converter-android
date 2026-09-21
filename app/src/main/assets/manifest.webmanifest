@@ -1,0 +1,14 @@
+{
+  "name": "三星动态照片转换器",
+  "short_name": "Motion Photo",
+  "description": "在设备本地将动态照片转换为 Samsung Motion Photo。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7faff",
+  "theme_color": "#176bff",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
