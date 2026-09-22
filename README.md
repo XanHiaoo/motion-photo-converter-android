@@ -1,10 +1,10 @@
-# Motion Photo Converter · Android
+# Samsung Motion Photo Converter
 
 一个面向三星 Motion Photo 的本地转换工具，提供 Web 预览版和 Android WebView 封装版。
 
 项目使用 React + Vite 实现界面和媒体处理逻辑，Android 端通过 WebView 离线加载 Web 资源。所有媒体处理均在本机完成，不上传用户文件。
 
-[在线预览](https://xanhiaoo.github.io/motion-photo-converter-android/) · [GitHub Actions](https://github.com/XanHiaoo/motion-photo-converter-android/actions)
+[在线预览](https://xanhiaoo.github.io/samsung-motion-photo-converter/) · [GitHub Actions](https://github.com/XanHiaoo/samsung-motion-photo-converter/actions)
 
 ## 功能
 
@@ -49,7 +49,7 @@ npm ci
 npm run dev -- --host 127.0.0.1 --strictPort
 ```
 
-访问 <http://127.0.0.1:5173/motion-photo-converter-android/>。
+访问 <http://127.0.0.1:5173/samsung-motion-photo-converter/>。
 
 也可以在 VS Code 中使用 Run and Debug，或执行 `Tasks: Run Task` → `web:dev`。
 
