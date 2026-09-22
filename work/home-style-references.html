@@ -1,0 +1,791 @@
+<div id="motion-photo-home-style-references" aria-label="Motion Photo Converter 手机首页风格参考">
+  <style>
+    #motion-photo-home-style-references {
+      width: 100%;
+      color: light-dark(#16223e, #eef4ff);
+      font-family: Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    }
+
+    #motion-photo-home-style-references,
+    #motion-photo-home-style-references * {
+      box-sizing: border-box;
+    }
+
+    #motion-photo-home-style-references .mps-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 auto 18px;
+      max-width: 390px;
+    }
+
+    #motion-photo-home-style-references .mps-toolbar-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: .01em;
+    }
+
+    #motion-photo-home-style-references .mps-current-style {
+      color: light-dark(#1d67ee, #8db4ff);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    #motion-photo-home-style-references .mps-style-picker {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      width: 100%;
+    }
+
+    #motion-photo-home-style-references .mps-style-picker button {
+      min-height: 40px;
+      border: 1px solid light-dark(#d8e2f2, #34425e);
+      border-radius: 11px;
+      background: light-dark(#ffffff, #1c2639);
+      color: light-dark(#536988, #b9c8e1);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    #motion-photo-home-style-references .mps-style-picker button[aria-pressed="true"] {
+      border-color: light-dark(#216dff, #75a3ff);
+      background: light-dark(#eaf2ff, #263958);
+      color: light-dark(#155fe7, #d7e5ff);
+    }
+
+    #motion-photo-home-style-references .mps-alternative {
+      width: min(100%, 390px);
+      margin: 0 auto 22px;
+      opacity: .52;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    #motion-photo-home-style-references .mps-alternative[data-mps-selected="true"] {
+      opacity: 1;
+      transform: translateY(-2px);
+    }
+
+    #motion-photo-home-style-references .mps-alternative-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 2px 8px;
+    }
+
+    #motion-photo-home-style-references .mps-alternative-heading h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    #motion-photo-home-style-references .mps-alternative-heading span {
+      color: light-dark(#7287a5, #a2b2cb);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    #motion-photo-home-style-references .mps-phone {
+      overflow: hidden;
+      min-height: 540px;
+      border: 1px solid light-dark(#dce6f4, #34425e);
+      border-radius: 29px;
+      background: light-dark(#f5f8fe, #111a2b);
+      box-shadow: 0 16px 36px light-dark(rgba(47, 85, 144, .12), rgba(0, 0, 0, .26));
+    }
+
+    #motion-photo-home-style-references .mps-phone-inner {
+      min-height: 540px;
+      padding: 20px 17px 22px;
+    }
+
+    #motion-photo-home-style-references .mps-status-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: light-dark(#7c8faa, #a9b8d0);
+      font-size: 11px;
+      letter-spacing: .04em;
+    }
+
+    #motion-photo-home-style-references .mps-brand-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    #motion-photo-home-style-references .mps-brand-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 13px;
+      background: #216dff;
+      color: #ffffff;
+    }
+
+    #motion-photo-home-style-references .mps-brand-icon svg {
+      width: 23px;
+      height: 23px;
+    }
+
+    #motion-photo-home-style-references .mps-brand-kicker {
+      margin: 0;
+      color: #216dff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .16em;
+    }
+
+    #motion-photo-home-style-references .mps-brand-name {
+      margin: 1px 0 0;
+      color: light-dark(#13213f, #eff5ff);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    #motion-photo-home-style-references .mps-theme-button {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      margin-left: auto;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: light-dark(#172641, #d9e6ff);
+    }
+
+    #motion-photo-home-style-references .mps-theme-button svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    #motion-photo-home-style-references .mps-notice {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 24px;
+      padding: 11px 13px;
+      border: 1px solid #c7dcff;
+      border-radius: 14px;
+      background: light-dark(#edf4ff, #1c304f);
+      color: light-dark(#3165ab, #c6dcff);
+      font-size: 13px;
+    }
+
+    #motion-photo-home-style-references .mps-notice svg {
+      width: 17px;
+      height: 17px;
+      flex: 0 0 auto;
+    }
+
+    #motion-photo-home-style-references .mps-intro {
+      margin-top: 30px;
+    }
+
+    #motion-photo-home-style-references .mps-intro h3 {
+      max-width: 300px;
+      margin: 0;
+      color: light-dark(#12203d, #f0f5ff);
+      font-size: 29px;
+      line-height: 1.08;
+      letter-spacing: -.04em;
+    }
+
+    #motion-photo-home-style-references .mps-intro p {
+      margin: 13px 0 0;
+      color: light-dark(#68809f, #a8b9d3);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    #motion-photo-home-style-references .mps-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    #motion-photo-home-style-references .mps-action {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 18px;
+      align-items: center;
+      gap: 11px;
+      width: 100%;
+      min-height: 76px;
+      padding: 11px 13px;
+      border: 1px solid light-dark(#dce7f7, #34435f);
+      border-radius: 18px;
+      background: light-dark(#ffffff, #18243a);
+      color: light-dark(#14213d, #f0f5ff);
+      text-align: left;
+    }
+
+    #motion-photo-home-style-references .mps-action.mps-action-primary {
+      min-height: 100px;
+      border-color: #216dff;
+      background: #216dff;
+      color: #ffffff;
+      box-shadow: 0 9px 19px rgba(33, 109, 255, .24);
+    }
+
+    #motion-photo-home-style-references .mps-action-icon {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border-radius: 14px;
+      background: light-dark(#eaf2ff, #263858);
+      color: #216dff;
+    }
+
+    #motion-photo-home-style-references .mps-action-primary .mps-action-icon {
+      background: rgba(255, 255, 255, .18);
+      color: #ffffff;
+    }
+
+    #motion-photo-home-style-references .mps-action-icon svg,
+    #motion-photo-home-style-references .mps-action-arrow svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    #motion-photo-home-style-references .mps-action-copy strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    #motion-photo-home-style-references .mps-action-copy small {
+      display: block;
+      margin-top: 4px;
+      color: light-dark(#6d83a1, #aabbd5);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    #motion-photo-home-style-references .mps-action-primary .mps-action-copy small {
+      color: rgba(255, 255, 255, .78);
+    }
+
+    #motion-photo-home-style-references .mps-action-arrow {
+      color: light-dark(#8ea3c2, #a9b9d2);
+    }
+
+    #motion-photo-home-style-references .mps-action-primary .mps-action-arrow {
+      color: rgba(255, 255, 255, .9);
+    }
+
+    #motion-photo-home-style-references .mps-phone-dark {
+      border-color: #28344c;
+      background: #0c1321;
+      color: #f5f8ff;
+      box-shadow: 0 18px 42px rgba(0, 0, 0, .36);
+    }
+
+    #motion-photo-home-style-references .mps-phone-dark .mps-phone-inner {
+      background: radial-gradient(circle at 88% 14%, rgba(40, 105, 255, .23), transparent 34%), #0c1321;
+    }
+
+    #motion-photo-home-style-references .mps-phone-dark .mps-brand-name,
+    #motion-photo-home-style-references .mps-phone-dark .mps-intro h3 {
+      color: #f5f8ff;
+    }
+
+    #motion-photo-home-style-references .mps-phone-dark .mps-theme-button {
+      color: #dbe8ff;
+    }
+
+    #motion-photo-home-style-references .mps-phone-dark .mps-notice {
+      border-color: #294e89;
+      background: #122642;
+      color: #bad3ff;
+    }
+
+    #motion-photo-home-style-references .mps-dark-preview {
+      position: relative;
+      overflow: hidden;
+      height: 126px;
+      margin-top: 25px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #1e5edb 0%, #6c35b2 53%, #e18170 100%);
+      box-shadow: inset 0 -48px 80px rgba(6, 12, 28, .38);
+    }
+
+    #motion-photo-home-style-references .mps-dark-preview::before,
+    #motion-photo-home-style-references .mps-dark-preview::after {
+      position: absolute;
+      display: block;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .18);
+      content: "";
+    }
+
+    #motion-photo-home-style-references .mps-dark-preview::before {
+      width: 92px;
+      height: 92px;
+      top: 18px;
+      left: 28px;
+    }
+
+    #motion-photo-home-style-references .mps-dark-preview::after {
+      width: 145px;
+      height: 145px;
+      right: -24px;
+      bottom: -72px;
+    }
+
+    #motion-photo-home-style-references .mps-dark-preview-label {
+      position: absolute;
+      right: 13px;
+      bottom: 12px;
+      left: 13px;
+      color: rgba(255, 255, 255, .85);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    #motion-photo-home-style-references .mps-dark-preview-play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .92);
+      color: #1e5edb;
+    }
+
+    #motion-photo-home-style-references .mps-dark-preview-play svg {
+      width: 18px;
+      height: 18px;
+      margin-left: 2px;
+    }
+
+    #motion-photo-home-style-references .mps-dark-title {
+      margin: 24px 0 0;
+      color: #f5f8ff;
+      font-size: 26px;
+      line-height: 1.1;
+      letter-spacing: -.03em;
+    }
+
+    #motion-photo-home-style-references .mps-dark-subtitle {
+      margin: 9px 0 0;
+      color: #9db0cf;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    #motion-photo-home-style-references .mps-dark-actions {
+      display: grid;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    #motion-photo-home-style-references .mps-dark-action {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr) 17px;
+      align-items: center;
+      gap: 11px;
+      min-height: 64px;
+      padding: 9px 11px;
+      border: 1px solid #273652;
+      border-radius: 17px;
+      background: rgba(27, 39, 61, .8);
+      color: #f2f6ff;
+    }
+
+    #motion-photo-home-style-references .mps-dark-action-primary {
+      border-color: #4d8bff;
+      background: linear-gradient(110deg, #276ef1, #4b8dff);
+    }
+
+    #motion-photo-home-style-references .mps-dark-action-icon {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      place-items: center;
+      border-radius: 13px;
+      background: rgba(255, 255, 255, .13);
+      color: #ffffff;
+    }
+
+    #motion-photo-home-style-references .mps-dark-action-icon svg,
+    #motion-photo-home-style-references .mps-dark-action-arrow svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    #motion-photo-home-style-references .mps-dark-action-copy strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    #motion-photo-home-style-references .mps-dark-action-copy small {
+      display: block;
+      margin-top: 3px;
+      color: #a8b8d3;
+      font-size: 11px;
+    }
+
+    #motion-photo-home-style-references .mps-dark-action-arrow {
+      color: #9eb4d9;
+    }
+
+    #motion-photo-home-style-references .mps-phone-minimal {
+      background: light-dark(#ffffff, #18202f);
+    }
+
+    #motion-photo-home-style-references .mps-minimal-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 18px;
+      border-bottom: 1px solid light-dark(#e3eaf4, #354259);
+    }
+
+    #motion-photo-home-style-references .mps-minimal-wordmark {
+      color: light-dark(#14213d, #eef4ff);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-wordmark span {
+      color: #216dff;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-heading {
+      margin: 32px 0 0;
+      color: light-dark(#14213d, #eef4ff);
+      font-size: 28px;
+      line-height: 1.12;
+      letter-spacing: -.04em;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-copy {
+      margin: 10px 0 0;
+      color: light-dark(#778aa4, #abb9cf);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-list {
+      display: grid;
+      margin-top: 30px;
+      border-top: 1px solid light-dark(#e3eaf4, #354259);
+    }
+
+    #motion-photo-home-style-references .mps-minimal-item {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr) 17px;
+      align-items: center;
+      gap: 12px;
+      min-height: 84px;
+      border: 0;
+      border-bottom: 1px solid light-dark(#e3eaf4, #354259);
+      background: transparent;
+      color: light-dark(#14213d, #eef4ff);
+      text-align: left;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-number {
+      color: #216dff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-item strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-item small {
+      display: block;
+      margin-top: 4px;
+      color: light-dark(#7d90aa, #acbad0);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    #motion-photo-home-style-references .mps-minimal-item svg {
+      width: 18px;
+      height: 18px;
+      color: light-dark(#91a4c0, #a5b8d4);
+    }
+
+    #motion-photo-home-style-references .mps-phone-wizard {
+      background: linear-gradient(180deg, #f6f9ff 0%, #edf3ff 100%);
+    }
+
+    #motion-photo-home-style-references .mps-wizard-progress {
+      display: flex;
+      gap: 5px;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-progress span {
+      display: block;
+      width: 30px;
+      height: 4px;
+      border-radius: 4px;
+      background: #d6e2f5;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-progress span:first-child {
+      background: #216dff;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-kicker {
+      margin: 70px 0 0;
+      color: #216dff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-heading {
+      margin: 11px 0 0;
+      color: #14213d;
+      font-size: 31px;
+      line-height: 1.08;
+      letter-spacing: -.045em;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-copy {
+      margin: 13px 0 0;
+      color: #6f83a3;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-actions {
+      display: grid;
+      gap: 11px;
+      margin-top: 29px;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-action {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) 18px;
+      align-items: center;
+      gap: 12px;
+      min-height: 78px;
+      padding: 12px 13px;
+      border: 1px solid #d5e2f6;
+      border-radius: 19px;
+      background: rgba(255, 255, 255, .75);
+      color: #14213d;
+      text-align: left;
+      box-shadow: 0 7px 18px rgba(68, 111, 181, .08);
+    }
+
+    #motion-photo-home-style-references .mps-wizard-action:first-child {
+      border-color: #216dff;
+      background: #ffffff;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-action-icon {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border-radius: 14px;
+      background: #e8f0ff;
+      color: #216dff;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-action-icon svg,
+    #motion-photo-home-style-references .mps-wizard-action-arrow svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-action strong {
+      display: block;
+      font-size: 15px;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-action small {
+      display: block;
+      margin-top: 4px;
+      color: #7186a6;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    #motion-photo-home-style-references .mps-wizard-action-arrow {
+      color: #90a5c5;
+    }
+
+    @media (max-width: 360px) {
+      #motion-photo-home-style-references .mps-phone-inner {
+        padding-right: 14px;
+        padding-left: 14px;
+      }
+
+      #motion-photo-home-style-references .mps-intro h3,
+      #motion-photo-home-style-references .mps-dark-title,
+      #motion-photo-home-style-references .mps-minimal-heading,
+      #motion-photo-home-style-references .mps-wizard-heading {
+        font-size: 26px;
+      }
+    }
+  </style>
+
+  <div class="mps-toolbar">
+    <p class="mps-toolbar-title">首页风格参考</p>
+    <span class="mps-current-style" data-mps-current aria-live="polite">当前：A 清爽卡片</span>
+    <div class="mps-style-picker" role="group" aria-label="选择首页风格">
+      <button type="button" data-mps-select="a" aria-pressed="true">A 清爽</button>
+      <button type="button" data-mps-select="b" aria-pressed="false">B 沉浸</button>
+      <button type="button" data-mps-select="c" aria-pressed="false">C 极简</button>
+      <button type="button" data-mps-select="d" aria-pressed="false">D 向导</button>
+    </div>
+  </div>
+
+  <section class="mps-alternative" data-mps-style="a" data-mps-selected="true" aria-label="A 清爽卡片风格">
+    <div class="mps-alternative-heading">
+      <h2>A. Samsung 清爽卡片</h2>
+      <span>推荐 · 延续现有品牌</span>
+    </div>
+    <div class="mps-phone">
+      <div class="mps-phone-inner">
+        <div class="mps-status-line"><span>9:41</span><span>● ◒ ▰</span></div>
+        <div class="mps-brand-line">
+          <div class="mps-brand-icon"><i data-lucide="images" aria-hidden="true"></i></div>
+          <div><p class="mps-brand-kicker">SAMSUNG 工具</p><p class="mps-brand-name">Motion Photo Converter</p></div>
+          <button class="mps-theme-button" type="button" aria-label="切换主题"><i data-lucide="moon" aria-hidden="true"></i></button>
+        </div>
+        <div class="mps-notice"><i data-lucide="shield-check" aria-hidden="true"></i><span>仅在本机处理，不会上传</span></div>
+        <div class="mps-intro"><h3>转换为 Samsung Motion Photo</h3><p>选择一种方式开始转换</p></div>
+        <div class="mps-actions">
+          <div class="mps-action mps-action-primary"><div class="mps-action-icon"><i data-lucide="film" aria-hidden="true"></i></div><div class="mps-action-copy"><strong>视频生成动态图</strong><small>截取片段并选择封面</small></div><div class="mps-action-arrow"><i data-lucide="arrow-right" aria-hidden="true"></i></div></div>
+          <div class="mps-action"><div class="mps-action-icon"><i data-lucide="scan" aria-hidden="true"></i></div><div class="mps-action-copy"><strong>批量导入动态图</strong><small>一次选择多个文件</small></div><div class="mps-action-arrow"><i data-lucide="chevron-right" aria-hidden="true"></i></div></div>
+          <div class="mps-action"><div class="mps-action-icon"><i data-lucide="plus" aria-hidden="true"></i></div><div class="mps-action-copy"><strong>照片和视频合成动态图</strong><small>合成两个独立文件</small></div><div class="mps-action-arrow"><i data-lucide="chevron-right" aria-hidden="true"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mps-alternative" data-mps-style="b" data-mps-selected="false" aria-label="B 沉浸式深色相册风格">
+    <div class="mps-alternative-heading">
+      <h2>B. 沉浸式深色相册</h2>
+      <span>高级 · 突出媒体处理</span>
+    </div>
+    <div class="mps-phone mps-phone-dark">
+      <div class="mps-phone-inner">
+        <div class="mps-status-line"><span>9:41</span><span>● ◒ ▰</span></div>
+        <div class="mps-brand-line">
+          <div class="mps-brand-icon"><i data-lucide="images" aria-hidden="true"></i></div>
+          <div><p class="mps-brand-kicker">SAMSUNG 工具</p><p class="mps-brand-name">Motion Photo</p></div>
+          <button class="mps-theme-button" type="button" aria-label="切换主题"><i data-lucide="sun" aria-hidden="true"></i></button>
+        </div>
+        <div class="mps-dark-preview"><div class="mps-dark-preview-play"><i data-lucide="play" aria-hidden="true"></i></div><span class="mps-dark-preview-label">把视频与照片变成一张会动的照片</span></div>
+        <h3 class="mps-dark-title">选择你的转换方式</h3>
+        <p class="mps-dark-subtitle">所有内容均在设备本地处理。</p>
+        <div class="mps-dark-actions">
+          <div class="mps-dark-action mps-dark-action-primary"><div class="mps-dark-action-icon"><i data-lucide="film" aria-hidden="true"></i></div><div class="mps-dark-action-copy"><strong>视频生成动态图</strong><small>截取片段并选择封面</small></div><div class="mps-dark-action-arrow"><i data-lucide="arrow-up-right" aria-hidden="true"></i></div></div>
+          <div class="mps-dark-action"><div class="mps-dark-action-icon"><i data-lucide="scan" aria-hidden="true"></i></div><div class="mps-dark-action-copy"><strong>批量导入动态图</strong><small>一次选择多个文件</small></div><div class="mps-dark-action-arrow"><i data-lucide="chevron-right" aria-hidden="true"></i></div></div>
+          <div class="mps-dark-action"><div class="mps-dark-action-icon"><i data-lucide="plus" aria-hidden="true"></i></div><div class="mps-dark-action-copy"><strong>照片和视频合成动态图</strong><small>合成两个独立文件</small></div><div class="mps-dark-action-arrow"><i data-lucide="chevron-right" aria-hidden="true"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mps-alternative" data-mps-style="c" data-mps-selected="false" aria-label="C 极简工具箱风格">
+    <div class="mps-alternative-heading">
+      <h2>C. 极简工具箱</h2>
+      <span>效率 · 信息最少</span>
+    </div>
+    <div class="mps-phone mps-phone-minimal">
+      <div class="mps-phone-inner">
+        <div class="mps-minimal-topline"><span class="mps-minimal-wordmark"><span>Motion</span> Photo Converter</span><i data-lucide="moon" aria-hidden="true"></i></div>
+        <h3 class="mps-minimal-heading">选择功能</h3>
+        <p class="mps-minimal-copy">本地处理 · 不会上传文件</p>
+        <div class="mps-minimal-list">
+          <div class="mps-minimal-item"><span class="mps-minimal-number">01</span><div><strong>视频生成动态图</strong><small>截取片段并选择封面</small></div><i data-lucide="chevron-right" aria-hidden="true"></i></div>
+          <div class="mps-minimal-item"><span class="mps-minimal-number">02</span><div><strong>批量导入动态图</strong><small>一次选择多个文件</small></div><i data-lucide="chevron-right" aria-hidden="true"></i></div>
+          <div class="mps-minimal-item"><span class="mps-minimal-number">03</span><div><strong>照片和视频合成动态图</strong><small>合成两个独立文件</small></div><i data-lucide="chevron-right" aria-hidden="true"></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mps-alternative" data-mps-style="d" data-mps-selected="false" aria-label="D 分步向导风格">
+    <div class="mps-alternative-heading">
+      <h2>D. 分步向导</h2>
+      <span>易用 · 适合新用户</span>
+    </div>
+    <div class="mps-phone mps-phone-wizard">
+      <div class="mps-phone-inner">
+        <div class="mps-status-line"><span>9:41</span><div class="mps-wizard-progress" aria-label="第 1 步，共 3 步"><span></span><span></span><span></span></div><span>● ◒ ▰</span></div>
+        <p class="mps-wizard-kicker">STEP 1 / 3</p>
+        <h3 class="mps-wizard-heading">你想从什么开始？</h3>
+        <p class="mps-wizard-copy">选择文件类型，下一步再设置转换参数。</p>
+        <div class="mps-wizard-actions">
+          <div class="mps-wizard-action"><div class="mps-wizard-action-icon"><i data-lucide="film" aria-hidden="true"></i></div><div><strong>视频生成动态图</strong><small>截取片段并选择封面</small></div><div class="mps-wizard-action-arrow"><i data-lucide="arrow-right" aria-hidden="true"></i></div></div>
+          <div class="mps-wizard-action"><div class="mps-wizard-action-icon"><i data-lucide="scan" aria-hidden="true"></i></div><div><strong>批量导入动态图</strong><small>一次选择多个文件</small></div><div class="mps-wizard-action-arrow"><i data-lucide="arrow-right" aria-hidden="true"></i></div></div>
+          <div class="mps-wizard-action"><div class="mps-wizard-action-icon"><i data-lucide="plus" aria-hidden="true"></i></div><div><strong>照片和视频合成动态图</strong><small>合成两个独立文件</small></div><div class="mps-wizard-action-arrow"><i data-lucide="arrow-right" aria-hidden="true"></i></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (() => {
+      const root = document.getElementById("motion-photo-home-style-references");
+      if (!root) return;
+
+      const state = { selected: "a" };
+      const labels = { a: "A 清爽卡片", b: "B 沉浸式深色相册", c: "C 极简工具箱", d: "D 分步向导" };
+      const alternatives = Array.from(root.querySelectorAll("[data-mps-style]"));
+      const pickerButtons = Array.from(root.querySelectorAll("[data-mps-select]"));
+      const currentLabel = root.querySelector("[data-mps-current]");
+
+      function render() {
+        alternatives.forEach((alternative) => {
+          const selected = alternative.dataset.mpsStyle === state.selected;
+          alternative.dataset.mpsSelected = selected ? "true" : "false";
+        });
+        pickerButtons.forEach((button) => {
+          button.setAttribute("aria-pressed", button.dataset.mpsSelect === state.selected ? "true" : "false");
+        });
+        currentLabel.textContent = `当前：${labels[state.selected]}`;
+      }
+
+      pickerButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          state.selected = button.dataset.mpsSelect;
+          render();
+        });
+      });
+
+      render();
+
+      if (globalThis.Tweak) {
+        const tweak = new Tweak({ container: root, onChange: render });
+        tweak.addSelect(state, "selected", {
+          label: "首页参考风格",
+          options: [
+            { label: "A 清爽卡片", value: "a" },
+            { label: "B 沉浸式深色相册", value: "b" },
+            { label: "C 极简工具箱", value: "c" },
+            { label: "D 分步向导", value: "d" }
+          ],
+          reference: "home.style"
+        });
+      }
+    })();
+  </script>
+</div>
