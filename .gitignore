@@ -4,9 +4,16 @@ local.properties
 **/build/
 web/node_modules/
 web/dist/
+/web/tests/fixtures/*
+!/web/tests/fixtures/README.md
 
 # Generated documentation and temporary preview files
 /output/
 /tmp/
 /work/
+
+# Local Android signing credentials
+app/keystore.properties
+*.jks
+*.keystore
 

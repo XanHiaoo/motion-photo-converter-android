@@ -2,9 +2,27 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "web:install-deps",
+      "type": "shell",
+      "command": "npm",
+      "windows": {
+        "command": "npm.cmd"
+      },
+      "args": [
+        "ci"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "web:dev",
       "type": "shell",
-      "command": "npm.cmd",
+      "command": "npm",
+      "windows": {
+        "command": "npm.cmd"
+      },
       "args": [
         "run",
         "dev",
@@ -39,21 +57,12 @@
       }
     },
     {
-      "label": "web:install-deps",
-      "type": "shell",
-      "command": "npm.cmd",
-      "args": [
-        "ci"
-      ],
-      "options": {
-        "cwd": "${workspaceFolder}/web"
-      },
-      "problemMatcher": []
-    },
-    {
       "label": "web:test",
       "type": "shell",
-      "command": "npm.cmd",
+      "command": "npm",
+      "windows": {
+        "command": "npm.cmd"
+      },
       "args": [
         "test"
       ],
@@ -65,7 +74,10 @@
     {
       "label": "web:build",
       "type": "shell",
-      "command": "npm.cmd",
+      "command": "npm",
+      "windows": {
+        "command": "npm.cmd"
+      },
       "args": [
         "run",
         "build"
@@ -78,7 +90,10 @@
     {
       "label": "web:build-android-assets",
       "type": "shell",
-      "command": "npm.cmd",
+      "command": "npm",
+      "windows": {
+        "command": "npm.cmd"
+      },
       "args": [
         "run",
         "build:android"
@@ -89,19 +104,87 @@
       "problemMatcher": []
     },
     {
+      "label": "web:preview",
+      "type": "shell",
+      "command": "npm",
+      "windows": {
+        "command": "npm.cmd"
+      },
+      "args": [
+        "run",
+        "preview",
+        "--",
+        "--host",
+        "127.0.0.1",
+        "--strictPort"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/web"
+      },
+      "dependsOn": [
+        "web:build"
+      ],
+      "dependsOrder": "sequence",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": "^(.*)$",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": ".*Local:.*"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "runOptions": {
+        "instanceLimit": 1
+      }
+    },
+    {
       "label": "android:build-debug",
       "type": "shell",
-      "command": "powershell.exe",
+      "command": "./gradlew",
+      "windows": {
+        "command": ".\\gradlew.bat"
+      },
       "args": [
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "${workspaceFolder}\\build-debug.ps1"
+        ":app:assembleDebug",
+        "--no-daemon"
       ],
       "options": {
         "cwd": "${workspaceFolder}"
       },
+      "dependsOn": [
+        "web:build-android-assets"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "android:build-release",
+      "type": "shell",
+      "command": "./gradlew",
+      "windows": {
+        "command": ".\\gradlew.bat"
+      },
+      "args": [
+        ":app:assembleRelease",
+        "--no-daemon"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": [
+        "web:build-android-assets"
+      ],
+      "dependsOrder": "sequence",
       "problemMatcher": []
     }
   ]
