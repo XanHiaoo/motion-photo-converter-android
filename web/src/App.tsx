@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronRight,
   CircleAlert,
   Download,
   FileImage,
@@ -11,7 +10,6 @@ import {
   Images,
   LoaderCircle,
   LockKeyhole,
-  Play,
   Plus,
   RefreshCw,
   ScanSearch,
@@ -981,17 +979,28 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
 
 function Home({ onOpen }: { onOpen: (view: View) => void }) {
   return (
-    <main className="home-shell home-immersive">
+    <main className="home-shell home-minimal">
       <header className="brand-row"><div className="brand-mark"><Images size={22} /></div><div><span>SAMSUNG TOOL</span><strong>Motion Photo Converter</strong></div></header>
-      <section className="home-hero" aria-label="Motion Photo Converter 首页">
-        <div className="home-hero-art" aria-hidden="true"><span className="home-hero-orbit home-hero-orbit-one" /><span className="home-hero-orbit home-hero-orbit-two" /><span className="home-hero-play"><Play size={19} fill="currentColor" /></span><span className="home-hero-caption">把照片与视频变成动态图</span></div>
-        <div className="home-intro"><h1>选择你的转换方式</h1><p>所有内容均在设备本地处理。</p></div>
+      <section className="home-intro" aria-label="Motion Photo Converter 首页">
+        <span className="home-kicker">本机工具</span>
+        <h1>让照片，<br /><span>多一点动态。</span></h1>
+        <p>生成 Samsung Motion Photo</p>
       </section>
-      <section className="mode-list" aria-label="转换方式">
-        <button className="mode-card mode-card-immersive featured" type="button" onClick={() => onOpen('video')}><span className="mode-icon"><Film size={23} /></span><span><strong>视频生成动态图</strong><small>截取片段并选择封面</small></span><ArrowRight size={20} /></button>
-        <button className="mode-card mode-card-immersive" type="button" onClick={() => onOpen('embedded')}><span className="mode-icon"><ScanSearch size={23} /></span><span><strong>批量导入动态图</strong><small>选择其他格式动态图（苹果、大疆等）</small></span><ChevronRight size={20} /></button>
-        <button className="mode-card mode-card-immersive" type="button" onClick={() => onOpen('manual')}><span className="mode-icon"><Plus size={23} /></span><span><strong>照片和视频合成动态图</strong><small>合成一个独立文件</small></span><ChevronRight size={20} /></button>
+      <section className="home-actions" aria-label="转换方式">
+        <button className="home-action home-action-primary" type="button" onClick={() => onOpen('video')}>
+          <span className="home-action-label">从一段视频开始 <Film size={16} /></span>
+          <span className="home-action-main"><span><strong>视频生成动态图</strong><small>截取片段 · 选择封面</small></span><ArrowRight size={21} /></span>
+        </button>
+        <button className="home-action" type="button" onClick={() => onOpen('embedded')}>
+          <span className="home-action-icon"><ScanSearch size={21} /></span>
+          <span className="home-action-main"><span><strong>批量导入动态图</strong><small>转换已有的其他格式动态图</small></span><ArrowRight size={19} /></span>
+        </button>
+        <button className="home-action" type="button" onClick={() => onOpen('manual')}>
+          <span className="home-action-icon"><Plus size={22} /></span>
+          <span className="home-action-main"><span><strong>照片和视频合成动态图</strong><small>用照片作封面，合成视频片段</small></span><ArrowRight size={19} /></span>
+        </button>
       </section>
+      <PrivacyNote />
     </main>
   );
 }
