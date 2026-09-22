@@ -17,3 +17,7 @@ app/keystore.properties
 *.jks
 *.keystore
 
+
+# Local Android signing
+*.jks
+*keystore.properties
