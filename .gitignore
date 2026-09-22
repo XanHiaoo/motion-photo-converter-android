@@ -5,3 +5,8 @@ local.properties
 web/node_modules/
 web/dist/
 
+# Generated documentation and temporary preview files
+/output/
+/tmp/
+/work/
+
