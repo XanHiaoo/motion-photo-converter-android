@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { clampClipEnd, clampClipStart, clampCoverTime, coverOffsetInClip, formatClipTime, isClipTrimmed, positionToClipTime, trimArguments } from '@/src/lib/video-trim';
+import { clampClipEnd, clampClipStart, clampCoverTime, coverOffsetInClip, formatClipTime, isClipTrimmed, positionToClipTime, snapClipTime, trimArguments } from '@/src/lib/video-trim';
 
 describe('video clip selection', () => {
   it('keeps the start and end at least 0.2 seconds apart', () => {
@@ -31,6 +31,11 @@ describe('video clip selection', () => {
     expect(positionToClipTime(50, 100, 200, 10)).toBe(0);
     expect(positionToClipTime(350, 100, 200, 10)).toBe(10);
     expect(positionToClipTime(150, 100, 0, 10)).toBe(0);
+  });
+
+  it('snaps manual time edits to 0.05-second precision', () => {
+    expect(snapClipTime(123.024)).toBeCloseTo(123);
+    expect(snapClipTime(123.026)).toBeCloseTo(123.05);
   });
 
   it('copies streams by default, avoiding an unnecessary re-encode', () => {
