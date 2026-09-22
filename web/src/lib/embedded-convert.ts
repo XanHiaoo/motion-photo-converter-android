@@ -15,7 +15,7 @@ export async function convertEmbeddedMotionFile(
   onStage?: (stage: string) => void,
 ): Promise<EmbeddedConversionResult> {
   const ranges = locateEmbeddedMotionParts(sourceAnalysis);
-  onStage?.('正在提取静态图片…');
+  onStage?.('正在提取图片…');
 
   const imageSource = sourceAnalysis.staticFormat === 'JPEG'
     ? new File(
@@ -26,7 +26,7 @@ export async function convertEmbeddedMotionFile(
     : source;
   const image = await normalizeImage(imageSource, onStage);
 
-  onStage?.('正在提取内嵌视频…');
+  onStage?.('正在提取视频…');
   const video = new File(
     [source.slice(ranges.videoStart, ranges.videoEnd, ranges.videoMime)],
     `${source.name.replace(/\.[^.]+$/, '')}.${ranges.videoExtension}`,
@@ -34,7 +34,7 @@ export async function convertEmbeddedMotionFile(
   );
   const normalizedVideo = await normalizeVideo(video, onStage);
 
-  onStage?.('正在写入三星 Motion Photo 元数据…');
+  onStage?.('正在写入 Motion Photo…');
   const sourceTimestamp = sourceAnalysis.presentationTimestampUs;
   const timestampUs = sourceTimestamp !== null
     ? sourceTimestamp
