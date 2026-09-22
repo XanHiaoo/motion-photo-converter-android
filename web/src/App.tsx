@@ -126,7 +126,7 @@ function CoverFadeOptions({ enabled, seconds, disabled, onEnabledChange, onSecon
     <div className="cover-fade-options">
       <label className="preview-option">
         <input type="checkbox" checked={enabled} disabled={disabled} onChange={(event) => onEnabledChange(event.currentTarget.checked)} />
-        <span><strong>结束时渐变回封面</strong><small>导出会在视频结尾追加渐变尾段，并重新编码视频</small></span>
+        <span><strong>结束时渐变回封面</strong><small>优先仅编码结尾过渡，安卓设备会尝试硬件加速</small></span>
       </label>
       {enabled ? (
         <label className="preview-duration-option">

@@ -96,3 +96,25 @@ export async function captureVideoFrame(video: HTMLVideoElement, sourceName: str
   });
   return new File([blob], `${sourceName.replace(/\.[^.]+$/, '')}.jpg`, { type: 'image/jpeg' });
 }
+
+export async function captureVideoEndFrame(file: File, duration: number): Promise<File> {
+  const url = URL.createObjectURL(file);
+  const video = document.createElement('video');
+  video.preload = 'auto';
+  video.muted = true;
+  video.playsInline = true;
+  video.src = url;
+  try {
+    const metadataDuration = await new Promise<number>((resolve, reject) => {
+      video.onloadedmetadata = () => resolve(video.duration);
+      video.onerror = () => reject(new Error('无法读取视频末帧。'));
+      video.load();
+    });
+    const end = Number.isFinite(metadataDuration) ? metadataDuration : duration;
+    return await captureVideoFrame(video, file.name, Math.max(0, Math.min(duration, end) - 0.05));
+  } finally {
+    video.removeAttribute('src');
+    video.load();
+    URL.revokeObjectURL(url);
+  }
+}
