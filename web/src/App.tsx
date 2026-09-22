@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   ArrowLeft,
-  ArrowRight,
   Check,
   CircleAlert,
   Download,
@@ -9,7 +8,6 @@ import {
   Film,
   Images,
   LoaderCircle,
-  LockKeyhole,
   Plus,
   RefreshCw,
   ScanSearch,
@@ -100,8 +98,21 @@ function ModeHeader({ title, onBack }: { title: string; onBack: () => void }) {
   );
 }
 
+function SchemeAIcon({ name }: { name: 'photos' | 'film' | 'stack' | 'combine' | 'arrow' | 'chevron' | 'lock' }) {
+  const shapes = {
+    photos: <><rect x="7" y="3" width="14" height="14" rx="3" /><path d="M4 8H3a1 1 0 0 0-1 1v11a2 2 0 0 0 2 2h11a1 1 0 0 0 1-1v-1M8 14l4-4 3 3 3-5 3 4" /><path d="M11 7h.01" /></>,
+    film: <><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M7 3v18M17 3v18M3 8h4M3 16h4M17 8h4M17 16h4M3 12h18" /></>,
+    stack: <><rect x="7" y="3" width="14" height="14" rx="3" /><path d="M3 8v11a2 2 0 0 0 2 2h11M12 7l5 3-5 3Z" /></>,
+    combine: <><rect x="2" y="3" width="9" height="13" rx="2" /><rect x="13" y="8" width="9" height="13" rx="2" /><path d="M4 12l2-3 3 3M17 12v5m-2-2.5h4" /></>,
+    arrow: <path d="M5 12h14m-6-6 6 6-6 6" />,
+    chevron: <path d="m9 6 6 6-6 6" />,
+    lock: <><rect x="6" y="10" width="12" height="10" rx="3" /><path d="M9 10V7a3 3 0 0 1 6 0v3m-3 4v2" /></>,
+  }[name];
+  return <svg className="scheme-a-icon" viewBox="0 0 24 24" aria-hidden="true">{shapes}</svg>;
+}
+
 function PrivacyNote() {
-  return <div className="privacy-note"><LockKeyhole size={17} /><span>仅在本机处理，不会上传。</span></div>;
+  return <div className="privacy-note"><SchemeAIcon name="lock" /><span>仅在本机处理，不会上传</span></div>;
 }
 
 function CoverFadeOptions({ enabled, seconds, disabled, onEnabledChange, onSecondsChange }: {
@@ -980,24 +991,23 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
 function Home({ onOpen }: { onOpen: (view: View) => void }) {
   return (
     <main className="home-shell home-minimal">
-      <header className="brand-row"><div className="brand-mark"><Images size={22} /></div><div><span>SAMSUNG TOOL</span><strong>Motion Photo Converter</strong></div></header>
+      <header className="brand-row"><div className="brand-mark"><SchemeAIcon name="photos" /></div><div className="brand-name"><strong>Motion Photo Converter</strong><small>SAMSUNG TOOL</small></div></header>
       <section className="home-intro" aria-label="Motion Photo Converter 首页">
-        <span className="home-kicker">本机工具</span>
         <h1>让照片，<br /><span>多一点动态。</span></h1>
-        <p>生成 Samsung Motion Photo</p>
+        <p>轻松生成 Samsung Motion Photo</p>
       </section>
       <section className="home-actions" aria-label="转换方式">
         <button className="home-action home-action-primary" type="button" onClick={() => onOpen('video')}>
-          <span className="home-action-label">从一段视频开始 <Film size={16} /></span>
-          <span className="home-action-main"><span><strong>视频生成动态图</strong><small>截取片段 · 选择封面</small></span><ArrowRight size={21} /></span>
+          <span className="home-action-label"><SchemeAIcon name="film" /><span>从一段视频开始</span></span>
+          <span className="home-action-main"><span><strong>视频生成动态图</strong><small>截取片段 · 选择封面</small></span><SchemeAIcon name="arrow" /></span>
         </button>
         <button className="home-action" type="button" onClick={() => onOpen('embedded')}>
-          <span className="home-action-icon"><ScanSearch size={21} /></span>
-          <span className="home-action-main"><span><strong>批量导入动态图</strong><small>转换已有的其他格式动态图</small></span><ArrowRight size={19} /></span>
+          <span className="home-action-icon"><SchemeAIcon name="stack" /></span>
+          <span className="home-action-main"><span><strong>批量导入动态图</strong><small>将已有动态图转换为 Samsung 格式</small></span><SchemeAIcon name="chevron" /></span>
         </button>
         <button className="home-action" type="button" onClick={() => onOpen('manual')}>
-          <span className="home-action-icon"><Plus size={22} /></span>
-          <span className="home-action-main"><span><strong>照片和视频合成动态图</strong><small>用照片作封面，合成视频片段</small></span><ArrowRight size={19} /></span>
+          <span className="home-action-icon"><SchemeAIcon name="combine" /></span>
+          <span className="home-action-main"><span><strong>照片和视频合成动态图</strong><small>用照片作封面，合成视频片段</small></span><SchemeAIcon name="chevron" /></span>
         </button>
       </section>
       <PrivacyNote />
