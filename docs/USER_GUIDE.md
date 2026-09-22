@@ -10,7 +10,7 @@ Motion Photo Converter 用于把视频、动态图片或照片与视频转换为
 
 打开在线预览：
 
-<https://xanhiaoo.github.io/motion-photo-converter-android/>
+<https://xanhiaoo.github.io/samsung-motion-photo-converter/>
 
 建议使用较新的 Samsung Internet 或 Android Chrome。首次打开或更新版本后，如果页面显示异常，可以刷新页面或清除站点缓存。
 

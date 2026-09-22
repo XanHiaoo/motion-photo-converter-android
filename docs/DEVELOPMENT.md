@@ -56,7 +56,7 @@ npm ci
 npm run dev -- --host 127.0.0.1 --strictPort
 ```
 
-访问：<http://127.0.0.1:5173/motion-photo-converter-android/>。
+访问：<http://127.0.0.1:5173/samsung-motion-photo-converter/>。
 
 常用命令：
 
