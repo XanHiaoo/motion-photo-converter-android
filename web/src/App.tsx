@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -24,9 +24,9 @@ import { formatBytes, locateEmbeddedMotionParts, outputName, type MediaAnalysis 
 import { convertEmbeddedMotionFile } from './lib/embedded-convert';
 import { normalizeImage, resizeImageToSize } from './lib/image-normalize';
 import { captureVideoFrame, createTimelineThumbnails } from './lib/video-frame';
-import { normalizeVideo, trimVideo } from './lib/video-remux';
+import { addCoverFade, DEFAULT_COVER_FADE_SECONDS, MAX_COVER_FADE_SECONDS, MIN_COVER_FADE_SECONDS, normalizeVideo, trimVideo } from './lib/video-remux';
 import { readVideoDimensions } from './lib/video-metadata';
-import { clampClipEnd, clampClipStart, clampCoverTime, coverOffsetInClip, formatClipTime, isClipTrimmed, MIN_CLIP_SECONDS, positionToClipTime, type TrimMode } from './lib/video-trim';
+import { clampClipEnd, clampClipStart, clampCoverTime, CLIP_TIME_STEP, coverOffsetInClip, formatClipTime, isClipTrimmed, MIN_CLIP_SECONDS, snapClipTime, type TrimMode } from './lib/video-trim';
 import { analyzeFile, muxFiles } from './lib/worker-client';
 
 type View = 'home' | 'embedded' | 'manual' | 'video';
@@ -106,11 +106,37 @@ function PrivacyNote() {
   return <div className="privacy-note"><LockKeyhole size={17} /><span>仅在本机处理，不会上传。</span></div>;
 }
 
+function CoverFadeOptions({ enabled, seconds, disabled, onEnabledChange, onSecondsChange }: {
+  enabled: boolean;
+  seconds: number;
+  disabled: boolean;
+  onEnabledChange: (enabled: boolean) => void;
+  onSecondsChange: (seconds: number) => void;
+}) {
+  return (
+    <div className="cover-fade-options">
+      <label className="preview-option">
+        <input type="checkbox" checked={enabled} disabled={disabled} onChange={(event) => onEnabledChange(event.currentTarget.checked)} />
+        <span><strong>结束时渐变回封面</strong><small>导出会在视频结尾追加渐变尾段，并重新编码视频</small></span>
+      </label>
+      {enabled ? (
+        <label className="preview-duration-option">
+          <span className="preview-duration-heading"><strong>渐变时长</strong><output>{seconds.toFixed(1)} 秒</output></span>
+          <input type="range" min={MIN_COVER_FADE_SECONDS} max={MAX_COVER_FADE_SECONDS} step="0.1" value={seconds} disabled={disabled} onChange={(event) => onSecondsChange(Number(event.currentTarget.value))} />
+          <small>时长越长越明显；视频过短时会自动缩短。</small>
+        </label>
+      ) : null}
+    </div>
+  );
+}
+
 function MotionFileMode({ onBack }: { onBack: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const tasksRef = useRef<MotionTask[]>([]);
   const [tasks, setTasks] = useState<MotionTask[]>([]);
   const [dragging, setDragging] = useState(false);
+  const [fadeToCover, setFadeToCover] = useState(true);
+  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_COVER_FADE_SECONDS);
 
   useEffect(() => { tasksRef.current = tasks; }, [tasks]);
   useEffect(() => () => {
@@ -164,7 +190,7 @@ function MotionFileMode({ onBack }: { onBack: () => void }) {
     if (!task.analysis || task.analysis.format === 'Samsung Motion Photo') return;
     updateTask(task.id, { status: 'working', stage: '正在准备…', error: null });
     try {
-      const output = await convertEmbeddedMotionFile(task.file, task.analysis, (stage) => updateTask(task.id, { stage }));
+      const output = await convertEmbeddedMotionFile(task.file, task.analysis, (stage) => updateTask(task.id, { stage }), { fadeToCover, coverFadeSeconds });
       const url = URL.createObjectURL(output.blob);
       updateTask(task.id, { output: { url, blob: output.blob, name: output.name }, status: 'success', stage: '转换完成' });
     } catch (caught) {
@@ -223,6 +249,7 @@ function MotionFileMode({ onBack }: { onBack: () => void }) {
       </button>
       <input ref={inputRef} className="visually-hidden" type="file" multiple accept={MOTION_ACCEPT} onChange={(event) => { addFiles([...(event.currentTarget.files ?? [])]); event.currentTarget.value = ''; }} />
       <div className="format-hint"><ScanSearch size={17} /><span>文件需同时包含图片和 MP4 / MOV 视频。</span></div>
+      <CoverFadeOptions enabled={fadeToCover} seconds={coverFadeSeconds} disabled={busy} onEnabledChange={setFadeToCover} onSecondsChange={setCoverFadeSeconds} />
 
       {tasks.length ? (
         <section className="task-section">
@@ -274,34 +301,78 @@ function FilePicker({ kind, file, accept, icon, onChange }: { kind: string; file
 }
 
 function ManualMode({ onBack }: { onBack: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [image, setImage] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
+  const [playableVideo, setPlayableVideo] = useState<File | null>(null);
+  const [duration, setDuration] = useState(0);
+  const [clipStart, setClipStart] = useState(0);
+  const [clipEnd, setClipEnd] = useState(0);
+  const [trimMode, setTrimMode] = useState<TrimMode>('fast');
+  const [timelineFrames, setTimelineFrames] = useState<string[]>([]);
+  const [timelineViewport, setTimelineViewport] = useState<TimelineViewport>({ start: 0, end: 0 });
+  const [frameReady, setFrameReady] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
   const [fitImageToVideo, setFitImageToVideo] = useState(false);
+  const [fadeToCover, setFadeToCover] = useState(true);
+  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_COVER_FADE_SECONDS);
   const [status, setStatus] = useState<Status>('idle');
   const [stage, setStage] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ url: string; blob: Blob; name: string } | null>(null);
+  const [result, setResult] = useState<{ url: string; blob: Blob; name: string; note: string | null } | null>(null);
+  const videoUrl = useMemo(() => playableVideo ? URL.createObjectURL(playableVideo) : null, [playableVideo]);
+
+  useEffect(() => () => { if (videoUrl) URL.revokeObjectURL(videoUrl); }, [videoUrl]);
   useEffect(() => () => { if (result) URL.revokeObjectURL(result.url); }, [result]);
+  useEffect(() => {
+    if (!videoUrl || duration <= 0) {
+      setTimelineViewport({ start: 0, end: 0 });
+      return;
+    }
+    setTimelineViewport({ start: 0, end: duration });
+  }, [videoUrl, duration]);
+  useEffect(() => {
+    setTimelineFrames([]);
+    if (!videoUrl || duration <= 0 || timelineViewport.end <= timelineViewport.start) return;
+    const controller = new AbortController();
+    const viewportDuration = timelineViewport.end - timelineViewport.start;
+    void createTimelineThumbnails(videoUrl, viewportDuration, controller.signal, timelineViewport.start)
+      .then((frames) => { if (!controller.signal.aborted) setTimelineFrames(frames); })
+      .catch(() => { /* 缩略图只是预览，失败时保留可操作的时间轴。 */ });
+    return () => controller.abort();
+  }, [videoUrl, duration, timelineViewport.start, timelineViewport.end]);
 
   const generate = async () => {
-    if (!image || !video) return;
+    if (!image || !playableVideo || !frameReady || !duration) return;
     setStatus('working');
     setError(null);
     try {
       const normalizedImage = await normalizeImage(image, setStage);
-      const normalizedVideo = await normalizeVideo(video, setStage);
-      setStage('正在生成 Motion Photo…');
+      const trimmed = isClipTrimmed(clipStart, clipEnd, duration);
+      const outputVideo = trimmed ? await trimVideo(playableVideo, clipStart, clipEnd, trimMode, setStage) : playableVideo;
+      const actualDuration = trimmed ? (await analyzeFile(outputVideo)).durationSeconds ?? clipEnd - clipStart : duration;
+      if (trimmed && actualDuration < MIN_CLIP_SECONDS) throw new Error('裁剪结果过短，请扩大片段范围或尝试精确裁剪。');
       let imageForOutput = normalizedImage;
+      const dimensions = await readVideoDimensions(outputVideo);
       if (fitImageToVideo) {
-        const dimensions = await readVideoDimensions(normalizedVideo);
         imageForOutput = await resizeImageToSize(normalizedImage, dimensions.width, dimensions.height, setStage);
       }
-      const videoAnalysis = await analyzeFile(normalizedVideo);
-      const timestampUs = videoAnalysis.durationSeconds ? Math.round(videoAnalysis.durationSeconds * 500_000) : -1;
+      const outputVideoAnalysis = trimmed ? await analyzeFile(outputVideo) : null;
+      const outputVideoWithFade = fadeToCover
+        ? await addCoverFade(outputVideo, imageForOutput, actualDuration, dimensions.width, dimensions.height, coverFadeSeconds, setStage)
+        : outputVideo;
+      setStage('正在生成 Motion Photo…');
+      const timestampUs = Math.round(actualDuration * 500_000);
       const name = outputName(image.name);
-      const output = await muxFiles(imageForOutput, normalizedVideo, name, timestampUs);
+      const output = await muxFiles(imageForOutput, outputVideoWithFade, name, timestampUs);
       if (!output.analysis.validation.isSamsungCompatible) throw new Error('生成结果未通过结构校验。');
-      setResult({ url: URL.createObjectURL(output.blob), blob: output.blob, name });
+      const extra = trimmed && trimMode === 'fast' && outputVideoAnalysis?.durationSeconds
+        ? Math.max(0, outputVideoAnalysis.durationSeconds - (clipEnd - clipStart))
+        : 0;
+      const notes: string[] = [];
+      if (fadeToCover) notes.push(`已在视频结尾追加 ${formatClipTime(coverFadeSeconds)} 的封面渐变尾段。`);
+      if (extra >= 0.15) notes.push(`快速裁剪可能多保留了约 ${formatClipTime(extra)} 的开头画面；如需严格起点，请选择精确裁剪。`);
+      setResult({ url: URL.createObjectURL(output.blob), blob: output.blob, name, note: notes.length ? notes.join(' ') : null });
       setStatus('success');
       setStage('转换成功');
     } catch (caught) {
@@ -312,50 +383,198 @@ function ManualMode({ onBack }: { onBack: () => void }) {
   };
 
   const replaceImage = (file: File) => { setImage(file); setResult(null); setStatus('idle'); setError(null); };
-  const replaceVideo = (file: File) => { setVideo(file); setResult(null); setStatus('idle'); setError(null); };
+  const replaceVideo = async (file: File) => {
+    setVideo(file);
+    setPlayableVideo(null);
+    setDuration(0);
+    setClipStart(0);
+    setClipEnd(0);
+    setTimelineViewport({ start: 0, end: 0 });
+    setFrameReady(false);
+    setIsPreviewing(false);
+    setResult(null);
+    setError(null);
+    if (/\.mov$/i.test(file.name) || file.type === 'video/quicktime') {
+      setStatus('analyzing');
+      try {
+        const mp4 = await normalizeVideo(file, setStage);
+        setPlayableVideo(mp4);
+        setStatus('idle');
+        setStage('');
+      } catch (caught) {
+        setStatus('error');
+        setStage('无法准备 MOV 视频');
+        setError(caught instanceof Error ? caught.message : String(caught));
+      }
+    } else {
+      setPlayableVideo(file);
+      setStatus('idle');
+      setStage('');
+    }
+  };
+
+  const seekVideo = (seconds: number) => {
+    const element = videoRef.current;
+    if (element) {
+      element.pause();
+      element.currentTime = seconds;
+    }
+    setIsPreviewing(false);
+    setResult(null);
+    setError(null);
+    setStatus('idle');
+  };
+
+  const selectClipStart = (seconds: number) => {
+    const next = clampClipStart(snapClipTime(seconds), clipEnd, duration);
+    setClipStart(next);
+    seekVideo(next);
+  };
+
+  const selectClipEnd = (seconds: number) => {
+    const next = clampClipEnd(snapClipTime(seconds), clipStart, duration);
+    setClipEnd(next);
+    seekVideo(Math.min(videoRef.current?.currentTime ?? next, next));
+  };
+
+  const selectTrimMode = (mode: TrimMode) => {
+    setTrimMode(mode);
+    setResult(null);
+    setError(null);
+  };
+
+  const previewClip = async () => {
+    const element = videoRef.current;
+    if (!element || !frameReady) return;
+    if (isPreviewing) {
+      element.pause();
+      setIsPreviewing(false);
+      return;
+    }
+    try {
+      element.currentTime = clipStart;
+      await element.play();
+      setIsPreviewing(true);
+    } catch {
+      setError('无法播放预览，但仍可拖动选择片段。');
+    }
+  };
+
+  const stopPreview = (element: HTMLVideoElement) => {
+    element.pause();
+    element.currentTime = clipStart;
+    setIsPreviewing(false);
+  };
 
   return (
     <main className="screen-shell">
       <ModeHeader title="照片和视频合成动态图" onBack={onBack} />
       <PrivacyNote />
-      <section className="section-heading"><span className="step-pill">手动合成</span><h1>选择照片和视频</h1><p>适用于照片和视频分开的情况。</p></section>
-      <section className="manual-stack"><FilePicker kind="照片" file={image} accept={IMAGE_ACCEPT} icon="image" onChange={replaceImage} /><div className="connector"><Plus size={15} /></div><FilePicker kind="视频" file={video} accept={VIDEO_ACCEPT} icon="video" onChange={replaceVideo} /></section>
+      <section className="section-heading"><span className="step-pill">手动合成</span><h1>选择照片和视频</h1><p>选择照片作为封面，再截取视频片段合成动态图。</p></section>
+      <section className="manual-stack"><FilePicker kind="照片" file={image} accept={IMAGE_ACCEPT} icon="image" onChange={replaceImage} /><div className="connector"><Plus size={15} /></div><FilePicker kind="视频" file={video} accept={VIDEO_ACCEPT} icon="video" onChange={(file) => { void replaceVideo(file); }} /></section>
       <label className="image-size-option">
-        <input type="checkbox" checked={fitImageToVideo} onChange={(event) => setFitImageToVideo(event.currentTarget.checked)} disabled={!video || status === 'working'} />
-        <span className="image-size-option-copy"><strong>{'\u56fe\u7247\u81ea\u9002\u5e94\u89c6\u9891\u5c3a\u5bf8'}</strong><small>{video ? '\u751f\u6210\u65f6\u6309\u89c6\u9891\u5bbd\u9ad8\u8c03\u6574\u56fe\u7247' : '\u5148\u9009\u62e9\u89c6\u9891\u540e\u53ef\u542f\u7528'}</small></span>
+        <input type="checkbox" checked={fitImageToVideo} onChange={(event) => setFitImageToVideo(event.currentTarget.checked)} disabled={!playableVideo || status === 'working' || status === 'analyzing'} />
+        <span className="image-size-option-copy"><strong>{'图片自适应视频尺寸'}</strong><small>{playableVideo ? '生成时按视频宽高调整图片' : '先选择视频后可启用'}</small></span>
       </label>
-      {status === 'working' ? <div className="progress-card"><LoaderCircle className="spin" /><div><strong>{stage}</strong><span>请保持页面打开</span></div></div> : null}
+      {videoUrl ? (
+        <section className="frame-card">
+          <div className="frame-heading"><strong>选择视频片段</strong><span>{formatClipTime(clipEnd - clipStart)}</span></div>
+          <div className="frame-preview-stage">
+            <video
+              key={videoUrl}
+              ref={videoRef}
+              className="frame-preview"
+              src={videoUrl}
+              preload="auto"
+              muted
+              playsInline
+              onLoadedMetadata={(event) => {
+                const value = event.currentTarget.duration;
+                if (Number.isFinite(value) && value > 0) { setDuration(value); setClipEnd(value); }
+                else setError('无法读取视频时长，请选择有效的 MP4 或 MOV。');
+              }}
+              onLoadedData={() => setFrameReady(true)}
+              onPause={() => setIsPreviewing(false)}
+              onEnded={(event) => stopPreview(event.currentTarget)}
+              onTimeUpdate={(event) => {
+                const element = event.currentTarget;
+                if (isPreviewing && element.currentTime >= clipEnd - 0.03) stopPreview(element);
+              }}
+              onError={() => { setFrameReady(false); setError('浏览器无法预览该视频，请使用 H.264 MP4。'); }}
+            />
+          </div>
+          {duration > 0 ? (
+            <>
+              <ClipRangeSelector duration={duration} start={clipStart} end={clipEnd} coverTime={null} frames={timelineFrames} disabled={status === 'working' || status === 'analyzing'} viewport={timelineViewport} onViewportChange={setTimelineViewport} onStartChange={selectClipStart} onEndChange={selectClipEnd} />
+              <div className="trim-method" role="group" aria-label="裁剪方式">
+                <button type="button" className={trimMode === 'fast' ? 'is-selected' : ''} aria-pressed={trimMode === 'fast'} disabled={status === 'working'} onClick={() => selectTrimMode('fast')}>快速裁剪</button>
+                <button type="button" className={trimMode === 'precise' ? 'is-selected' : ''} aria-pressed={trimMode === 'precise'} disabled={status === 'working'} onClick={() => selectTrimMode('precise')}>精确裁剪</button>
+              </div>
+              <p className="trim-method-note">{trimMode === 'fast' ? '快速：速度快；起点可能略有偏差。' : '精确：重新编码 H.264，边界更准但更慢。'}</p>
+              <div className="clip-preview-controls">
+                <button className="clip-preview-button" type="button" disabled={!frameReady || status === 'working' || status === 'analyzing'} onClick={() => void previewClip()}>{isPreviewing ? '暂停预览' : '预览片段'}</button>
+                <CoverFadeOptions enabled={fadeToCover} seconds={coverFadeSeconds} disabled={!frameReady || status === 'working' || status === 'analyzing'} onEnabledChange={setFadeToCover} onSecondsChange={setCoverFadeSeconds} />
+              </div>
+            </>
+          ) : null}
+          <p>照片作为封面；未裁剪时使用完整视频。</p>
+        </section>
+      ) : null}
+      {status === 'analyzing' || status === 'working' ? <div className="progress-card"><LoaderCircle className="spin" /><div><strong>{stage}</strong><span>请保持页面打开</span></div></div> : null}
       {status === 'error' ? <div className="error-card"><CircleAlert /><div><strong>{stage}</strong><span>{error}</span></div></div> : null}
-      {result ? <section className="result-card"><div className="success-mark"><Check size={23} /></div><div className="result-copy"><span>转换完成</span><strong>{result.name}</strong><small>{formatBytes(result.blob.size)}</small></div><img src={result.url} alt="结果图片缩略图" /><button className="primary-button" type="button" onClick={() => download(result.url, result.name)}><Download />保存 Motion Photo</button></section> : null}
-      {!result ? <div className="bottom-action"><button className="primary-button" type="button" disabled={!image || !video || status === 'working'} onClick={() => void generate()}>{status === 'working' ? <LoaderCircle className="spin" /> : <Plus />}{status === 'working' ? '正在生成…' : '生成 Motion Photo'}</button></div> : null}
+      {result ? <section className="result-card"><div className="success-mark"><Check size={23} /></div><div className="result-copy"><span>转换完成</span><strong>{result.name}</strong><small>{formatBytes(result.blob.size)}</small></div><img src={result.url} alt="结果图片缩略图" />{result.note ? <small className="result-note">{result.note}</small> : null}<button className="primary-button" type="button" onClick={() => download(result.url, result.name)}><Download />保存 Motion Photo</button></section> : null}
+      {!result ? <div className="bottom-action"><button className="primary-button" type="button" disabled={!image || !playableVideo || !frameReady || !duration || status === 'working' || status === 'analyzing'} onClick={() => void generate()}>{status === 'working' ? <LoaderCircle className="spin" /> : <Plus />}{status === 'working' ? '正在生成…' : '生成 Motion Photo'}</button></div> : null}
     </main>
   );
 }
 
-function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, onStartChange, onEndChange }: {
+type TimelineViewport = { start: number; end: number };
+
+function viewportForSelection(start: number, end: number, duration: number): TimelineViewport {
+  if (duration <= 0 || end - start >= duration - 0.05) return { start: 0, end: duration };
+  const context = Math.min(Math.max(1.5, (end - start) * 0.45), Math.max(1.5, duration * 0.16));
+  return {
+    start: Math.max(0, start - context),
+    end: Math.min(duration, end + context),
+  };
+}
+
+function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, viewport, onViewportChange, onStartChange, onEndChange }: {
   duration: number;
   start: number;
   end: number;
-  coverTime: number;
+  coverTime: number | null;
   frames: string[];
   disabled: boolean;
+  viewport: TimelineViewport;
+  onViewportChange: (viewport: TimelineViewport) => void;
   onStartChange: (seconds: number) => void;
   onEndChange: (seconds: number) => void;
 }) {
   const railRef = useRef<HTMLDivElement>(null);
   const activePointer = useRef<{ id: number; handle: 'start' | 'end' } | null>(null);
-  const startPercent = duration > 0 ? start / duration * 100 : 0;
-  const endPercent = duration > 0 ? end / duration * 100 : 100;
-  const coverPercent = duration > 0 ? coverTime / duration * 100 : 0;
+  const [localViewport, setLocalViewport] = useState<TimelineViewport>(viewport);
+  useEffect(() => setLocalViewport(viewport), [viewport.start, viewport.end, duration]);
+  const viewStart = Math.max(0, Math.min(localViewport.start, duration));
+  const viewEnd = Math.min(duration, Math.max(viewStart + 0.05, localViewport.end));
+  const viewDuration = Math.max(0.05, viewEnd - viewStart);
+  const startPercent = Math.min(100, Math.max(0, (start - viewStart) / viewDuration * 100));
+  const endPercent = Math.min(100, Math.max(0, (end - viewStart) / viewDuration * 100));
+  const coverPercent = coverTime === null ? null : Math.min(100, Math.max(0, (coverTime - viewStart) / viewDuration * 100));
+  const overviewStartPercent = duration > 0 ? start / duration * 100 : 0;
+  const overviewEndPercent = duration > 0 ? end / duration * 100 : 100;
+  const overviewViewStartPercent = duration > 0 ? viewStart / duration * 100 : 0;
+  const overviewViewEndPercent = duration > 0 ? viewEnd / duration * 100 : 100;
 
   const timeAtPointer = (clientX: number) => {
     const rect = railRef.current?.getBoundingClientRect();
-    return rect ? positionToClipTime(clientX, rect.left, rect.width, duration) : 0;
+    return rect ? viewStart + ((clientX - rect.left) / rect.width) * viewDuration : 0;
   };
 
   const moveHandle = (handle: 'start' | 'end', seconds: number) => {
-    if (handle === 'start') onStartChange(clampClipStart(seconds, end, duration));
-    else onEndChange(clampClipEnd(seconds, start, duration));
+    const snapped = snapClipTime(seconds);
+    if (handle === 'start') onStartChange(clampClipStart(snapped, end, duration));
+    else onEndChange(clampClipEnd(snapped, start, duration));
   };
 
   const pointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -363,9 +582,9 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
     const target = (event.target as HTMLElement).closest<HTMLElement>('[data-handle]');
     const seconds = timeAtPointer(event.clientX);
     const rect = railRef.current?.getBoundingClientRect();
-    const overlapping = rect && duration > 0 && (end - start) / duration * rect.width < 34;
+    const overlapping = rect && duration > 0 && (end - start) / viewDuration * rect.width < 34;
     const nearest = overlapping && rect
-      ? event.clientX <= rect.left + (start + end) / (2 * duration) * rect.width ? 'start' : 'end'
+      ? event.clientX <= rect.left + ((start + end) / 2 - viewStart) / viewDuration * rect.width ? 'start' : 'end'
       : Math.abs(seconds - start) <= Math.abs(seconds - end) ? 'start' : 'end';
     let handle: 'start' | 'end' = nearest;
     if (!overlapping && (target?.dataset.handle === 'start' || target?.dataset.handle === 'end')) handle = target.dataset.handle;
@@ -376,11 +595,26 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
   };
 
   const pointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (activePointer.current?.id === event.pointerId) moveHandle(activePointer.current.handle, timeAtPointer(event.clientX));
+    const active = activePointer.current;
+    const rect = railRef.current?.getBoundingClientRect();
+    if (!active || active.id !== event.pointerId || !rect) return;
+    const seconds = timeAtPointer(event.clientX);
+    if (active.handle === 'start' && seconds < viewStart && viewStart > 0) {
+      const next = { start: Math.max(0, seconds - viewDuration * 0.15), end: viewEnd };
+      setLocalViewport(next);
+    } else if (active.handle === 'end' && seconds > viewEnd && viewEnd < duration) {
+      const next = { start: viewStart, end: Math.min(duration, seconds + viewDuration * 0.15) };
+      setLocalViewport(next);
+    }
+    moveHandle(active.handle, seconds);
   };
 
   const pointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (activePointer.current?.id === event.pointerId) activePointer.current = null;
+    if (activePointer.current?.id !== event.pointerId) return;
+    activePointer.current = null;
+    const next = viewportForSelection(start, end, duration);
+    setLocalViewport(next);
+    onViewportChange(next);
   };
 
   const handleKey = (event: ReactKeyboardEvent<HTMLDivElement>, handle: 'start' | 'end') => {
@@ -400,19 +634,26 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
 
   return (
     <div className={`clip-range-group ${disabled ? 'is-disabled' : ''}`}>
+      <div className="clip-overview" aria-label="全片概览">
+        <div className="clip-overview-track">
+          <div className="clip-overview-viewport" style={{ left: `${overviewViewStartPercent}%`, width: `${overviewViewEndPercent - overviewViewStartPercent}%` }} />
+          <div className="clip-overview-selection" style={{ left: `${overviewStartPercent}%`, width: `${overviewEndPercent - overviewStartPercent}%` }} />
+        </div>
+        <span>全片 {formatClipTime(duration)}</span>
+      </div>
       <div className="clip-range" onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={pointerUp} onPointerCancel={pointerUp}>
         <div className="clip-range-rail" ref={railRef}>
           <div className="clip-frame-strip" aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <div className="clip-frame" key={index}>{frames[index] ? <img src={frames[index]} alt="" /> : null}</div>)}</div>
           <div className="clip-range-mask" style={{ left: 0, width: `${startPercent}%` }} />
           <div className="clip-range-mask" style={{ left: `${endPercent}%`, width: `${100 - endPercent}%` }} />
           <div className="clip-range-selection" style={{ left: `${startPercent}%`, width: `${endPercent - startPercent}%` }} />
-          <div className="clip-range-playhead" style={{ left: `${coverPercent}%` }} aria-hidden="true" />
+          {coverPercent !== null ? <div className="clip-range-playhead" style={{ left: `${coverPercent}%` }} aria-hidden="true" /> : null}
           <div className="clip-range-handle" data-handle="start" style={{ left: `${startPercent}%` }} role="slider" tabIndex={disabled ? -1 : 0} aria-label="片段起点" aria-valuemin={0} aria-valuemax={Math.max(0, end - MIN_CLIP_SECONDS)} aria-valuenow={start} aria-valuetext={formatClipTime(start)} aria-disabled={disabled} onKeyDown={(event) => handleKey(event, 'start')} />
           <div className="clip-range-handle" data-handle="end" style={{ left: `${endPercent}%` }} role="slider" tabIndex={disabled ? -1 : 0} aria-label="片段终点" aria-valuemin={Math.min(duration, start + MIN_CLIP_SECONDS)} aria-valuemax={duration} aria-valuenow={end} aria-valuetext={formatClipTime(end)} aria-disabled={disabled} onKeyDown={(event) => handleKey(event, 'end')} />
         </div>
       </div>
-      <div className="clip-range-times"><span>开始 <strong>{formatClipTime(start)}</strong></span><span>结束 <strong>{formatClipTime(end)}</strong></span></div>
-      <small>拖动蓝色把手选择片段；白线表示封面画面</small>
+      <div className="clip-range-times"><span>起点 <strong>{formatClipTime(start)}</strong></span><span>片段 <strong>{formatClipTime(end - start)}</strong></span><span>终点 <strong>{formatClipTime(end)}</strong></span></div>
+      <small>上下两层分别是全片概览和当前编辑范围；拖动边缘可恢复被裁掉的前后内容{coverTime !== null ? '，白线表示封面画面' : ''}。</small>
     </div>
   );
 }
@@ -428,8 +669,14 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   const [trimMode, setTrimMode] = useState<TrimMode>('fast');
   const [selectedTime, setSelectedTime] = useState(0);
   const [timelineFrames, setTimelineFrames] = useState<string[]>([]);
+  const [timelineViewport, setTimelineViewport] = useState<TimelineViewport>({ start: 0, end: 0 });
   const [frameReady, setFrameReady] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [fadeToCover, setFadeToCover] = useState(true);
+  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_COVER_FADE_SECONDS);
+  const [showCoverTransition, setShowCoverTransition] = useState(false);
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+  const coverTransitionTimerRef = useRef<number | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [stage, setStage] = useState('');
   const [progress, setProgress] = useState<number | null>(null);
@@ -440,15 +687,55 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
 
   useEffect(() => () => { if (videoUrl) URL.revokeObjectURL(videoUrl); }, [videoUrl]);
   useEffect(() => () => { if (result) URL.revokeObjectURL(result.url); }, [result]);
+  useEffect(() => () => { if (coverPreviewUrl) URL.revokeObjectURL(coverPreviewUrl); }, [coverPreviewUrl]);
+  useEffect(() => () => {
+    if (coverTransitionTimerRef.current !== null) {
+      window.clearTimeout(coverTransitionTimerRef.current);
+      coverTransitionTimerRef.current = null;
+    }
+  }, []);
+  useEffect(() => {
+    if (!videoUrl || duration <= 0) {
+      setTimelineViewport({ start: 0, end: 0 });
+      return;
+    }
+    setTimelineViewport({ start: 0, end: duration });
+  }, [videoUrl, duration]);
   useEffect(() => {
     setTimelineFrames([]);
-    if (!videoUrl || duration <= 0) return;
+    if (!videoUrl || duration <= 0 || timelineViewport.end <= timelineViewport.start) return;
     const controller = new AbortController();
-    void createTimelineThumbnails(videoUrl, duration, controller.signal)
+    const viewportDuration = timelineViewport.end - timelineViewport.start;
+    void createTimelineThumbnails(videoUrl, viewportDuration, controller.signal, timelineViewport.start)
       .then((frames) => { if (!controller.signal.aborted) setTimelineFrames(frames); })
       .catch(() => { /* 缩略图只是预览，失败时保留可操作的时间轴。 */ });
     return () => controller.abort();
-  }, [videoUrl, duration]);
+  }, [videoUrl, duration, timelineViewport.start, timelineViewport.end]);
+  useEffect(() => {
+    if (!fadeToCover || !videoUrl || !frameReady) {
+      setCoverPreviewUrl(null);
+      setShowCoverTransition(false);
+      return;
+    }
+    if (isPreviewing || !videoRef.current) return;
+
+    const element = videoRef.current;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void captureVideoFrame(element, source?.name ?? 'cover.mp4', selectedTime)
+        .then((image) => {
+          if (!cancelled) setCoverPreviewUrl(URL.createObjectURL(image));
+        })
+        .catch(() => {
+          if (!cancelled) setCoverPreviewUrl(null);
+        });
+    }, 120);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [fadeToCover, videoUrl, frameReady, selectedTime, source?.name, isPreviewing]);
   useEffect(() => {
     if (status !== 'working') return;
     const startedAt = Date.now();
@@ -458,14 +745,21 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   }, [status]);
 
   const chooseVideo = async (file: File) => {
+    if (coverTransitionTimerRef.current !== null) {
+      window.clearTimeout(coverTransitionTimerRef.current);
+      coverTransitionTimerRef.current = null;
+    }
     setSource(file);
     setPlayableVideo(null);
     setDuration(0);
     setClipStart(0);
     setClipEnd(0);
     setSelectedTime(0);
+    setTimelineViewport({ start: 0, end: 0 });
     setFrameReady(false);
     setIsPreviewing(false);
+    setShowCoverTransition(false);
+    setCoverPreviewUrl(null);
     setStatus('idle');
     setStage('');
     setProgress(null);
@@ -489,6 +783,10 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   };
 
   const seekFrame = (time: number) => {
+    if (coverTransitionTimerRef.current !== null) {
+      window.clearTimeout(coverTransitionTimerRef.current);
+      coverTransitionTimerRef.current = null;
+    }
     setSelectedTime(time);
     const element = videoRef.current;
     if (element) {
@@ -496,6 +794,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
       element.currentTime = time;
     }
     setIsPreviewing(false);
+    setShowCoverTransition(false);
     setResult(null);
     setError(null);
     setProgress(null);
@@ -511,7 +810,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   };
 
   const selectFrame = (seconds: number) => {
-    seekFrame(clampCoverTime(seconds, clipStart, clipEnd));
+    seekFrame(clampCoverTime(snapClipTime(seconds), clipStart, clipEnd));
   };
 
   const selectClipStart = (seconds: number) => {
@@ -531,14 +830,39 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
     if (!element || !frameReady) return;
     if (isPreviewing) {
       element.pause();
+      setShowCoverTransition(false);
       return;
     }
     try {
+      if (coverTransitionTimerRef.current !== null) {
+        window.clearTimeout(coverTransitionTimerRef.current);
+        coverTransitionTimerRef.current = null;
+      }
+      setShowCoverTransition(false);
       element.currentTime = clipStart;
       await element.play();
       setIsPreviewing(true);
     } catch {
       setError('无法播放预览，但仍可拖动选择片段与封面。');
+    }
+  };
+
+  const returnToCover = (element: HTMLVideoElement) => {
+    setIsPreviewing(false);
+    element.pause();
+    if (coverTransitionTimerRef.current !== null) {
+      window.clearTimeout(coverTransitionTimerRef.current);
+      coverTransitionTimerRef.current = null;
+    }
+    if (fadeToCover && coverPreviewUrl) {
+      setShowCoverTransition(true);
+      coverTransitionTimerRef.current = window.setTimeout(() => {
+        element.currentTime = selectedTime;
+        coverTransitionTimerRef.current = null;
+      }, coverFadeSeconds * 1000 + 40);
+    } else {
+      element.currentTime = selectedTime;
+      setShowCoverTransition(false);
     }
   };
 
@@ -558,13 +882,23 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
       }) : playableVideo;
       const actualDuration = trimmed ? (await analyzeFile(outputVideo)).durationSeconds ?? clipEnd - clipStart : duration;
       if (trimmed && actualDuration < MIN_CLIP_SECONDS) throw new Error('裁剪结果过短，请扩大片段范围或尝试精确裁剪。');
+      const dimensions = await readVideoDimensions(outputVideo);
+      const outputVideoWithFade = fadeToCover
+        ? await addCoverFade(outputVideo, image, actualDuration, dimensions.width, dimensions.height, coverFadeSeconds, (message, value) => {
+          setStage(message);
+          setProgress(value ?? null);
+        })
+        : outputVideo;
       const coverOffset = trimmed ? coverOffsetInClip(selectedTime, clipStart, clipEnd, actualDuration, trimMode) : selectedTime;
       setStage('正在写入 Samsung Motion Photo…');
       const name = outputName(source.name);
-      const output = await muxFiles(image, outputVideo, name, Math.round(coverOffset * 1_000_000));
+      const output = await muxFiles(image, outputVideoWithFade, name, Math.round(coverOffset * 1_000_000));
       if (!output.analysis.validation.isSamsungCompatible) throw new Error('生成结果未通过 Samsung Motion Photo 结构校验。');
       const extra = trimmed && trimMode === 'fast' ? Math.max(0, actualDuration - (clipEnd - clipStart)) : 0;
-      const note = extra >= 0.15 ? `快速裁剪可能多保留了约 ${formatClipTime(extra)} 的开头画面；如需严格起点，请选择精确裁剪。` : null;
+      const notes: string[] = [];
+      if (fadeToCover) notes.push(`已在视频结尾追加 ${formatClipTime(coverFadeSeconds)} 的封面渐变尾段。`);
+      if (extra >= 0.15) notes.push(`快速裁剪可能多保留了约 ${formatClipTime(extra)} 的开头画面；如需严格起点，请选择精确裁剪。`);
+      const note = notes.length > 0 ? notes.join(' ') : null;
       setResult({ url: URL.createObjectURL(output.blob), blob: output.blob, name, note });
       setStatus('success');
       setStage('转换成功');
@@ -590,43 +924,46 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
       {videoUrl ? (
         <section className="frame-card">
           <div className="frame-heading"><strong>选择视频片段</strong><span>{formatClipTime(clipEnd - clipStart)}</span></div>
-          <video
-            key={videoUrl}
-            ref={videoRef}
-            className="frame-preview"
-            src={videoUrl}
-            preload="auto"
-            muted
-            playsInline
-            onLoadedMetadata={(event) => {
-              const value = event.currentTarget.duration;
-              if (Number.isFinite(value) && value > 0) { setDuration(value); setClipEnd(value); }
-              else setError('无法读取视频时长，请选择有效的 MP4 或 MOV。');
-            }}
-            onLoadedData={() => setFrameReady(true)}
-            onPause={() => setIsPreviewing(false)}
-            onEnded={(event) => { setIsPreviewing(false); event.currentTarget.currentTime = selectedTime; }}
-            onTimeUpdate={(event) => {
-              const video = event.currentTarget;
-              if (isPreviewing && video.currentTime >= clipEnd - 0.03) {
-                video.pause();
-                video.currentTime = selectedTime;
-              }
-            }}
-            onError={() => { setFrameReady(false); setError('浏览器无法预览该视频，请使用 H.264 MP4。'); }}
-          />
+          <div className={`frame-preview-stage ${showCoverTransition ? 'is-showing-cover' : ''}`} style={{ '--cover-fade-duration': `${coverFadeSeconds}s` } as CSSProperties}>
+            <video
+              key={videoUrl}
+              ref={videoRef}
+              className="frame-preview"
+              src={videoUrl}
+              preload="auto"
+              muted
+              playsInline
+              onLoadedMetadata={(event) => {
+                const value = event.currentTarget.duration;
+                if (Number.isFinite(value) && value > 0) { setDuration(value); setClipEnd(value); }
+                else setError('无法读取视频时长，请选择有效的 MP4 或 MOV。');
+              }}
+              onLoadedData={() => setFrameReady(true)}
+              onPause={() => setIsPreviewing(false)}
+              onEnded={(event) => returnToCover(event.currentTarget)}
+              onTimeUpdate={(event) => {
+                const video = event.currentTarget;
+                if (isPreviewing && video.currentTime >= clipEnd - 0.03) returnToCover(video);
+              }}
+              onError={() => { setFrameReady(false); setError('浏览器无法预览该视频，请使用 H.264 MP4。'); }}
+            />
+            {coverPreviewUrl ? <img className="frame-cover-preview" src={coverPreviewUrl} alt="选定的封面预览" aria-hidden="true" /> : null}
+          </div>
           {duration > 0 ? (
             <>
-              <ClipRangeSelector duration={duration} start={clipStart} end={clipEnd} coverTime={selectedTime} frames={timelineFrames} disabled={status === 'working'} onStartChange={selectClipStart} onEndChange={selectClipEnd} />
+              <ClipRangeSelector duration={duration} start={clipStart} end={clipEnd} coverTime={selectedTime} frames={timelineFrames} disabled={status === 'working'} viewport={timelineViewport} onViewportChange={setTimelineViewport} onStartChange={selectClipStart} onEndChange={selectClipEnd} />
               <div className="trim-method" role="group" aria-label="裁剪方式">
                 <button type="button" className={trimMode === 'fast' ? 'is-selected' : ''} aria-pressed={trimMode === 'fast'} disabled={status === 'working'} onClick={() => selectTrimMode('fast')}>快速裁剪</button>
                 <button type="button" className={trimMode === 'precise' ? 'is-selected' : ''} aria-pressed={trimMode === 'precise'} disabled={status === 'working'} onClick={() => selectTrimMode('precise')}>精确裁剪</button>
               </div>
               <p className="trim-method-note">{trimMode === 'fast' ? '快速：复制原视频，速度快；起点可能略有偏差。' : '精确：重新编码 H.264，边界更准但更慢。'}</p>
-              <button className="clip-preview-button" type="button" disabled={!frameReady || status === 'working'} onClick={() => void previewClip()}>{isPreviewing ? '暂停预览' : '预览片段'}</button>
+              <div className="clip-preview-controls">
+                <button className="clip-preview-button" type="button" disabled={!frameReady || status === 'working'} onClick={() => void previewClip()}>{isPreviewing ? '暂停预览' : '预览片段'}</button>
+                <CoverFadeOptions enabled={fadeToCover} seconds={coverFadeSeconds} disabled={!frameReady || status === 'working'} onEnabledChange={(enabled) => { setFadeToCover(enabled); setShowCoverTransition(false); }} onSecondsChange={setCoverFadeSeconds} />
+              </div>
               <div className="frame-heading cover-heading"><strong>选择封面</strong><span>{formatClipTime(selectedTime)}</span></div>
               <label className="frame-slider-label" htmlFor="cover-time">拖动选择封面</label>
-              <input id="cover-time" className="frame-slider" type="range" min={clipStart} max={clampCoverTime(clipEnd, clipStart, clipEnd)} step="0.05" value={selectedTime} disabled={status === 'working'} onChange={(event) => selectFrame(Number(event.currentTarget.value))} />
+              <input id="cover-time" className="frame-slider" type="range" min={clipStart} max={clampCoverTime(clipEnd, clipStart, clipEnd)} step={CLIP_TIME_STEP} value={selectedTime} disabled={status === 'working'} onChange={(event) => selectFrame(Number(event.currentTarget.value))} />
               <div className="frame-endpoints"><span>片段开始</span><span>片段结束</span></div>
             </>
           ) : null}
@@ -645,7 +982,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
 function Home({ onOpen }: { onOpen: (view: View) => void }) {
   return (
     <main className="home-shell home-immersive">
-      <header className="brand-row"><div className="brand-mark"><Images size={22} /></div><div><span>SAMSUNG 工具</span><strong>Motion Photo Converter</strong></div></header>
+      <header className="brand-row"><div className="brand-mark"><Images size={22} /></div><div><span>SAMSUNG TOOL</span><strong>Motion Photo Converter</strong></div></header>
       <section className="home-hero" aria-label="Motion Photo Converter 首页">
         <div className="home-hero-art" aria-hidden="true"><span className="home-hero-orbit home-hero-orbit-one" /><span className="home-hero-orbit home-hero-orbit-two" /><span className="home-hero-play"><Play size={19} fill="currentColor" /></span><span className="home-hero-caption">把照片与视频变成动态图</span></div>
         <div className="home-intro"><h1>选择你的转换方式</h1><p>所有内容均在设备本地处理。</p></div>

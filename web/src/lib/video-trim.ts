@@ -1,5 +1,11 @@
 export const MIN_CLIP_SECONDS = 0.2;
+export const CLIP_TIME_STEP = 0.05;
 export type TrimMode = 'fast' | 'precise';
+
+export function snapClipTime(seconds: number): number {
+  if (!Number.isFinite(seconds)) return 0;
+  return Math.round(Math.max(0, seconds) / CLIP_TIME_STEP) * CLIP_TIME_STEP;
+}
 
 export function clampClipStart(seconds: number, end: number, duration: number): number {
   if (!Number.isFinite(duration) || duration <= 0) return 0;
@@ -26,7 +32,7 @@ export function positionToClipTime(clientX: number, left: number, width: number,
   if (!Number.isFinite(clientX) || !Number.isFinite(width) || width <= 0 || !Number.isFinite(duration) || duration <= 0) return 0;
   const ratio = Math.min(1, Math.max(0, (clientX - left) / width));
   if (ratio === 1) return duration;
-  return Math.min(duration, Math.round(ratio * duration * 20) / 20);
+  return Math.min(duration, snapClipTime(ratio * duration));
 }
 
 export function formatClipTime(seconds: number): string {

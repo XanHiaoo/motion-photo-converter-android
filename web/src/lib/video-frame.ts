@@ -43,7 +43,7 @@ function waitForFrame(video: HTMLVideoElement, seconds: number, signal?: AbortSi
   });
 }
 
-export async function createTimelineThumbnails(url: string, duration: number, signal: AbortSignal): Promise<string[]> {
+export async function createTimelineThumbnails(url: string, duration: number, signal: AbortSignal, start = 0): Promise<string[]> {
   if (!Number.isFinite(duration) || duration <= 0) return [];
   const canvas = document.createElement('canvas');
   canvas.width = 112;
@@ -58,7 +58,7 @@ export async function createTimelineThumbnails(url: string, duration: number, si
   const frames: string[] = [];
   try {
     for (let index = 0; index < 6 && !signal.aborted; index += 1) {
-      const time = clampFrameTime(index / 5 * duration, duration);
+      const time = Math.max(0, start + index / 5 * Math.max(0, duration - 0.05));
       try {
         await waitForFrame(video, time, signal);
       } catch {

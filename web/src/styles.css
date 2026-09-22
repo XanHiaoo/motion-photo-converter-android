@@ -168,8 +168,15 @@ html:has(.home-immersive), html:has(.home-immersive) body { background: radial-g
 .frame-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .frame-heading strong { font-size: 13px; }
 .frame-heading span { color: var(--blue); font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 750; }
-.frame-preview { width: 100%; max-height: 340px; aspect-ratio: 16 / 9; margin-top: 13px; border-radius: 15px; display: block; object-fit: contain; background: #09101b; }
+.frame-preview-stage { width: 100%; max-height: 340px; aspect-ratio: 16 / 9; margin-top: 13px; position: relative; overflow: hidden; border-radius: 15px; background: #09101b; }
+.frame-preview { width: 100%; height: 100%; display: block; object-fit: contain; background: #09101b; }
+.frame-cover-preview { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; object-fit: contain; background: #09101b; opacity: 0; pointer-events: none; transition: opacity var(--cover-fade-duration, 1200ms) ease; }
+.frame-preview-stage.is-showing-cover .frame-cover-preview { opacity: 1; }
 .clip-range-group { margin-top: 18px; }
+.clip-overview { margin: 0 16px 8px; display: flex; align-items: center; gap: 8px; color: var(--quiet); font-size: 9px; }
+.clip-overview-track { height: 5px; position: relative; flex: 1; overflow: hidden; border-radius: 99px; background: #dce7f7; }
+.clip-overview-viewport { height: 100%; position: absolute; z-index: 1; border-radius: inherit; background: rgba(23, 107, 255, 0.2); }
+.clip-overview-selection { height: 100%; position: absolute; z-index: 2; border-radius: inherit; background: var(--blue); }
 .clip-range { height: 82px; padding: 0 16px; display: flex; align-items: center; touch-action: none; cursor: pointer; }
 .clip-range-rail { width: 100%; height: 58px; position: relative; border-radius: 12px; background: #17253b; box-shadow: 0 4px 14px rgba(15, 34, 67, 0.16); }
 .clip-frame-strip { width: 100%; height: 100%; border-radius: inherit; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); overflow: hidden; pointer-events: none; }
@@ -195,7 +202,22 @@ html:has(.home-immersive), html:has(.home-immersive) body { background: radial-g
 .trim-method button { min-height: 36px; border: 0; border-radius: 10px; color: var(--muted); background: transparent; font-size: 11px; font-weight: 750; cursor: pointer; }
 .trim-method button.is-selected { color: var(--blue); background: var(--surface); box-shadow: 0 2px 8px rgba(39, 72, 123, 0.1); }
 .frame-card .trim-method-note { margin-top: 8px; color: var(--muted); }
-.clip-preview-button { min-height: 36px; margin-top: 13px; padding: 0 13px; border: 1px solid #c6dcff; border-radius: 11px; color: var(--blue); background: var(--blue-soft); font-size: 11px; font-weight: 750; cursor: pointer; }
+.clip-preview-controls { margin-top: 13px; display: grid; gap: 10px; }
+.cover-fade-options { margin-top: 14px; display: grid; gap: 10px; }
+.clip-preview-controls .cover-fade-options { margin-top: 0; }
+.clip-preview-button { min-height: 36px; padding: 0 13px; border: 1px solid #c6dcff; border-radius: 11px; color: var(--blue); background: var(--blue-soft); font-size: 11px; font-weight: 750; cursor: pointer; }
+.preview-option { min-height: 48px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 13px; display: flex; align-items: center; gap: 10px; color: var(--ink); background: var(--page); cursor: pointer; }
+.preview-option:has(input:disabled) { cursor: not-allowed; opacity: 0.62; }
+.preview-option input { width: 17px; height: 17px; flex: 0 0 auto; accent-color: var(--blue); cursor: pointer; }
+.preview-option span { min-width: 0; display: grid; gap: 4px; }
+.preview-option strong { font-size: 11px; }
+.preview-option small { color: var(--muted); font-size: 10px; line-height: 1.35; }
+.preview-duration-option { padding: 10px 12px; border: 1px solid var(--line); border-radius: 13px; display: grid; gap: 8px; background: var(--page); }
+.preview-duration-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.preview-duration-heading strong { font-size: 11px; }
+.preview-duration-heading output { color: var(--blue); font-size: 11px; font-variant-numeric: tabular-nums; font-weight: 750; }
+.preview-duration-option input { width: 100%; margin: 0; accent-color: var(--blue); cursor: pointer; }
+.preview-duration-option small { color: var(--muted); font-size: 10px; line-height: 1.35; }
 .cover-heading { margin-top: 21px; padding-top: 17px; border-top: 1px solid var(--line); }
 .frame-slider-label { margin-top: 16px; display: block; color: var(--ink); font-size: 12px; font-weight: 700; }
 .frame-slider { width: 100%; margin: 13px 0 0; accent-color: var(--blue); cursor: pointer; }
@@ -243,6 +265,7 @@ html:has(.home-immersive), html:has(.home-immersive) body { background: radial-g
 .primary-button:active:not(:disabled) { background: var(--blue-strong); transform: scale(0.99); }
 .primary-button svg { width: 19px; }
 .spin { animation: spin 0.9s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .frame-cover-preview { transition-duration: 0ms; } }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 html:has(.home-immersive), html:has(.home-immersive) body { background: radial-gradient(circle at 100% 0, rgba(37, 105, 255, 0.1), transparent 25rem), #f4f7fd; }
