@@ -11,13 +11,11 @@ import {
   Images,
   LoaderCircle,
   LockKeyhole,
-  Moon,
   Play,
   Plus,
   RefreshCw,
   ScanSearch,
   ShieldCheck,
-  Sun,
   Upload,
   X,
 } from 'lucide-react';
@@ -95,12 +93,11 @@ function fileKind(file: File | null): string {
   return file?.name.split('.').pop()?.toUpperCase() ?? '未选择';
 }
 
-function ModeHeader({ title, onBack, dark, onToggleDark }: { title: string; onBack: () => void; dark: boolean; onToggleDark: () => void }) {
+function ModeHeader({ title, onBack }: { title: string; onBack: () => void }) {
   return (
     <header className="mode-header">
       <button className="icon-button" type="button" onClick={onBack} aria-label="返回首页"><ArrowLeft size={21} /></button>
       <strong>{title}</strong>
-      <button className="icon-button" type="button" onClick={onToggleDark} aria-label="切换深色模式">{dark ? <Sun size={20} /> : <Moon size={20} />}</button>
     </header>
   );
 }
@@ -109,7 +106,7 @@ function PrivacyNote() {
   return <div className="privacy-note"><LockKeyhole size={17} /><span>仅在本机处理，不会上传。</span></div>;
 }
 
-function MotionFileMode({ dark, onToggleDark, onBack }: { dark: boolean; onToggleDark: () => void; onBack: () => void }) {
+function MotionFileMode({ onBack }: { onBack: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const tasksRef = useRef<MotionTask[]>([]);
   const [tasks, setTasks] = useState<MotionTask[]>([]);
@@ -203,7 +200,7 @@ function MotionFileMode({ dark, onToggleDark, onBack }: { dark: boolean; onToggl
 
   return (
     <main className="screen-shell">
-      <ModeHeader title="批量导入动态图" onBack={onBack} dark={dark} onToggleDark={onToggleDark} />
+      <ModeHeader title="批量导入动态图" onBack={onBack} />
       <PrivacyNote />
       <section className="section-heading">
         <span className="step-pill">批量模式</span>
@@ -276,7 +273,7 @@ function FilePicker({ kind, file, accept, icon, onChange }: { kind: string; file
   );
 }
 
-function ManualMode({ dark, onToggleDark, onBack }: { dark: boolean; onToggleDark: () => void; onBack: () => void }) {
+function ManualMode({ onBack }: { onBack: () => void }) {
   const [image, setImage] = useState<File | null>(null);
   const [video, setVideo] = useState<File | null>(null);
   const [fitImageToVideo, setFitImageToVideo] = useState(false);
@@ -319,7 +316,7 @@ function ManualMode({ dark, onToggleDark, onBack }: { dark: boolean; onToggleDar
 
   return (
     <main className="screen-shell">
-      <ModeHeader title="照片和视频合成动态图" onBack={onBack} dark={dark} onToggleDark={onToggleDark} />
+      <ModeHeader title="照片和视频合成动态图" onBack={onBack} />
       <PrivacyNote />
       <section className="section-heading"><span className="step-pill">手动合成</span><h1>选择照片和视频</h1><p>适用于照片和视频分开的情况。</p></section>
       <section className="manual-stack"><FilePicker kind="照片" file={image} accept={IMAGE_ACCEPT} icon="image" onChange={replaceImage} /><div className="connector"><Plus size={15} /></div><FilePicker kind="视频" file={video} accept={VIDEO_ACCEPT} icon="video" onChange={replaceVideo} /></section>
@@ -420,7 +417,7 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
   );
 }
 
-function VideoOnlyMode({ dark, onToggleDark, onBack }: { dark: boolean; onToggleDark: () => void; onBack: () => void }) {
+function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [source, setSource] = useState<File | null>(null);
@@ -580,7 +577,7 @@ function VideoOnlyMode({ dark, onToggleDark, onBack }: { dark: boolean; onToggle
 
   return (
     <main className="screen-shell">
-      <ModeHeader title="视频生成 Motion Photo" onBack={onBack} dark={dark} onToggleDark={onToggleDark} />
+      <ModeHeader title="视频生成 Motion Photo" onBack={onBack} />
       <PrivacyNote />
       <section className="section-heading"><span className="step-pill">视频模式</span><h1>用视频生成 Motion Photo</h1><p>选择片段和封面，生成 Samsung Motion Photo。</p></section>
       <button className={`upload-zone ${source ? 'is-compact' : ''}`} type="button" disabled={status === 'working' || status === 'analyzing'} onClick={() => inputRef.current?.click()}>
@@ -645,18 +642,18 @@ function VideoOnlyMode({ dark, onToggleDark, onBack }: { dark: boolean; onToggle
   );
 }
 
-function Home({ dark, onToggleDark, onOpen }: { dark: boolean; onToggleDark: () => void; onOpen: (view: View) => void }) {
+function Home({ onOpen }: { onOpen: (view: View) => void }) {
   return (
     <main className="home-shell home-immersive">
-      <header className="brand-row"><div className="brand-mark"><Images size={22} /></div><div><span>SAMSUNG 工具</span><strong>Motion Photo Converter</strong></div><button className="icon-button" type="button" onClick={onToggleDark} aria-label="切换深色模式">{dark ? <Sun size={20} /> : <Moon size={20} />}</button></header>
+      <header className="brand-row"><div className="brand-mark"><Images size={22} /></div><div><span>SAMSUNG 工具</span><strong>Motion Photo Converter</strong></div></header>
       <section className="home-hero" aria-label="Motion Photo Converter 首页">
         <div className="home-hero-art" aria-hidden="true"><span className="home-hero-orbit home-hero-orbit-one" /><span className="home-hero-orbit home-hero-orbit-two" /><span className="home-hero-play"><Play size={19} fill="currentColor" /></span><span className="home-hero-caption">把照片与视频变成动态图</span></div>
         <div className="home-intro"><h1>选择你的转换方式</h1><p>所有内容均在设备本地处理。</p></div>
       </section>
       <section className="mode-list" aria-label="转换方式">
         <button className="mode-card mode-card-immersive featured" type="button" onClick={() => onOpen('video')}><span className="mode-icon"><Film size={23} /></span><span><strong>视频生成动态图</strong><small>截取片段并选择封面</small></span><ArrowRight size={20} /></button>
-        <button className="mode-card mode-card-immersive" type="button" onClick={() => onOpen('embedded')}><span className="mode-icon"><ScanSearch size={23} /></span><span><strong>批量导入动态图</strong><small>一次选择多个文件</small></span><ChevronRight size={20} /></button>
-        <button className="mode-card mode-card-immersive" type="button" onClick={() => onOpen('manual')}><span className="mode-icon"><Plus size={23} /></span><span><strong>照片和视频合成动态图</strong><small>合成两个独立文件</small></span><ChevronRight size={20} /></button>
+        <button className="mode-card mode-card-immersive" type="button" onClick={() => onOpen('embedded')}><span className="mode-icon"><ScanSearch size={23} /></span><span><strong>批量导入动态图</strong><small>选择其他格式动态图（苹果、大疆等）</small></span><ChevronRight size={20} /></button>
+        <button className="mode-card mode-card-immersive" type="button" onClick={() => onOpen('manual')}><span className="mode-icon"><Plus size={23} /></span><span><strong>照片和视频合成动态图</strong><small>合成一个独立文件</small></span><ChevronRight size={20} /></button>
       </section>
     </main>
   );
@@ -664,11 +661,8 @@ function Home({ dark, onToggleDark, onOpen }: { dark: boolean; onToggleDark: () 
 
 export default function App() {
   const [view, setView] = useState<View>('home');
-  const [dark, setDark] = useState(() => localStorage.getItem('motion-photo-theme') === 'dark' || (!localStorage.getItem('motion-photo-theme') && matchMedia('(prefers-color-scheme: dark)').matches));
-  useEffect(() => { document.documentElement.classList.toggle('dark', dark); localStorage.setItem('motion-photo-theme', dark ? 'dark' : 'light'); }, [dark]);
-  const toggleDark = () => setDark((value) => !value);
-  if (view === 'embedded') return <MotionFileMode dark={dark} onToggleDark={toggleDark} onBack={() => setView('home')} />;
-  if (view === 'video') return <VideoOnlyMode dark={dark} onToggleDark={toggleDark} onBack={() => setView('home')} />;
-  if (view === 'manual') return <ManualMode dark={dark} onToggleDark={toggleDark} onBack={() => setView('home')} />;
-  return <Home dark={dark} onToggleDark={toggleDark} onOpen={setView} />;
+  if (view === 'embedded') return <MotionFileMode onBack={() => setView('home')} />;
+  if (view === 'video') return <VideoOnlyMode onBack={() => setView('home')} />;
+  if (view === 'manual') return <ManualMode onBack={() => setView('home')} />;
+  return <Home onOpen={setView} />;
 }
