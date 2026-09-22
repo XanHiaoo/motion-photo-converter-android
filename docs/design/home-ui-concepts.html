@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Motion Photo · 首页设计方案</title>
+  <style>
+    :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; color: #202b3d; background: #e9ecef; font-synthesis: none; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button:focus-visible { outline: 3px solid #4381ec; outline-offset: 4px; }
+    button, a { touch-action: manipulation; }
+    svg { flex: 0 0 auto; }
+    .icon { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+    .icon.small { width: 16px; height: 16px; }
+    .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+    .board { max-width: 1260px; padding: 44px 28px 38px; margin: auto; }
+    .board-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+    .eyebrow { margin: 0 0 9px; font-size: 10px; font-weight: 700; letter-spacing: .17em; color: #667080; }
+    .board h1 { margin: 0; font-size: 28px; letter-spacing: -.04em; font-weight: 650; }
+    .board-description { font-size: 13px; line-height: 1.7; color: #687180; margin: 9px 0 0; }
+    .view-switch { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #dde2e7; flex-shrink: 0; }
+    .view-switch button { min-height: 38px; border: 0; padding: 0 14px; border-radius: 9px; color: #5e6877; background: transparent; font-size: 12px; }
+    .view-switch button[aria-pressed="true"] { background: white; color: #182b45; box-shadow: 0 2px 5px #1f30430b; }
+    .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; align-items: start; }
+    .gallery.is-single { grid-template-columns: minmax(0, 382px); justify-content: center; }
+    .concept[hidden] { display: none; }
+    .concept-title { margin: 0 0 15px; display: flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 650; }
+    .letter { width: 25px; height: 25px; display: grid; place-items: center; background: #dbe1e7; border-radius: 7px; font-size: 12px; }
+    .recommended { margin-left: auto; font-size: 10px; color: #28624e; background: #dcebe4; padding: 4px 7px; border-radius: 5px; font-weight: 500; }
+    .device { border: 1px solid #cfd5dc; border-radius: 35px; padding: 5px; background: #f8f9fa; box-shadow: 0 12px 26px #2837470c; }
+    .screen { position: relative; min-height: 726px; border-radius: 30px; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
+    .status-bar { height: 43px; display: flex; align-items: center; justify-content: space-between; padding: 6px 23px 0; font-size: 12px; font-weight: 650; }
+    .status-icons { display: flex; gap: 5px; align-items: center; }
+    .status-icons .icon { width: 16px; height: 16px; stroke-width: 1.7; }
+    .app-content { flex: 1; padding: 20px 22px 0; }
+    .brand { display: flex; align-items: center; gap: 9px; }
+    .brand-mark { width: 33px; height: 33px; display: grid; place-items: center; border-radius: 10px; background: #edf3ff; color: #2869e8; }
+    .brand-mark .icon { width: 20px; height: 20px; }
+    .brand-name { font-size: 14px; letter-spacing: -.03em; font-weight: 680; }
+    .brand-name small { display: block; font-size: 9px; color: #8891a2; font-weight: 400; letter-spacing: .03em; margin-top: 2px; }
+    .intro { margin: 37px 0 28px; }
+    .intro h2 { font-size: 29px; font-weight: 650; line-height: 1.4; letter-spacing: -.055em; margin: 0; }
+    .intro p { font-size: 12px; line-height: 1.7; color: #7d8796; margin: 10px 0 0; }
+    .tool-list { display: grid; gap: 12px; }
+    .tool { width: 100%; display: flex; align-items: center; text-align: left; border: 1px solid #e8edf3; border-radius: 17px; background: #fff; color: inherit; padding: 20px 15px; gap: 12px; min-height: 90px; transition: transform .18s, background .18s; }
+    .tool:hover { background: #f8faff; transform: translateY(-2px); }
+    .tool-copy { min-width: 0; flex: 1; }
+    .tool strong { display: block; font-size: 14px; line-height: 1.5; font-weight: 650; letter-spacing: -.025em; }
+    .tool small { display: block; font-size: 11px; line-height: 1.6; color: #838b99; margin-top: 4px; }
+    .tool-icon { width: 38px; height: 40px; display: grid; place-items: center; flex: 0 0 auto; color: #5d779f; }
+    .arrow { width: 16px; height: 16px; color: #9ca9bc; }
+    .privacy { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 10px; color: #8a94a1; margin: 28px 12px 22px; }
+    .home-indicator { width: 105px; height: 4px; background: #253142; opacity: .7; border-radius: 8px; margin: 0 auto 10px; }
+    .concept-note { margin: 17px 2px 0; font-size: 12px; line-height: 1.85; color: #65707d; }
+    .concept-note b { font-weight: 600; color: #354153; }
+    .concept-pick { display: inline-flex; align-items: center; gap: 6px; background: transparent; padding: 8px 0; margin-top: 4px; border: 0; font-size: 12px; color: #375c91; }
+    .board-foot { margin: 28px 0 0; border-top: 1px solid #d7dce2; padding-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between; font-size: 11px; color: #7b8591; }
+    .board-foot p { margin: 0; }
+
+    /* A · 功能优先，蓝色只用于主要入口。 */
+    .a .intro h2 span { color: #2869e8; }
+    .a .primary { display: block; padding: 19px 19px 20px; background: #2869e8; border-color: #2869e8; color: white; min-height: 150px; }
+    .a .primary:hover { background: #205ed7; }
+    .a .primary-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 19px; }
+    .a .primary-top > span { color: #dce8ff; font-size: 10px; letter-spacing: .025em; }
+    .a .primary-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .a .primary strong { font-size: 17px; }
+    .a .primary small { color: #e3edff; }
+    .a .primary .arrow { color: white; width: 20px; height: 20px; }
+    .a .tool-list { gap: 10px; }
+    .a .privacy { margin-top: 32px; }
+
+    /* B · 浅色相册，叠放的照片与视频承载功能意象。 */
+    .b .screen { color: #233f3a; background: #f7f7f2; }
+    .b .brand { justify-content: space-between; }
+    .b .brand-name { font-size: 11px; letter-spacing: .12em; }
+    .b .brand-mark { color: #366c5f; background: transparent; width: 27px; }
+    .b .intro { margin: 26px 0 0; }
+    .b .intro h2 { font-size: 27px; }
+    .b .intro p { color: #798780; margin-top: 5px; }
+    .media-art { height: 170px; position: relative; margin: 9px 0 17px; }
+    .photo { position: absolute; width: 155px; height: 114px; left: 25px; top: 17px; padding: 5px 5px 19px; background: #fff; border-radius: 5px; transform: rotate(-9deg); box-shadow: 0 8px 18px #263e3222; }
+    .landscape { width: 100%; height: 100%; display: block; border-radius: 2px; }
+    .video-art { position: absolute; width: 172px; height: 110px; top: 43px; right: 15px; border: 5px solid white; border-radius: 9px; overflow: hidden; transform: rotate(6deg); box-shadow: 0 8px 18px #263e3222; background: #acc7bb; }
+    .live-tag { position: absolute; top: 8px; left: 8px; color: white; background: #243f3a88; border-radius: 4px; padding: 3px 5px; display: flex; gap: 4px; align-items: center; font-size: 8px; letter-spacing: .06em; }
+    .live-dot { width: 6px; height: 6px; border: 1px solid currentColor; border-radius: 50%; }
+    .art-play { position: absolute; left: calc(50% - 15px); top: calc(50% - 15px); width: 30px; height: 30px; border: 1px solid #ffffff88; background: #ffffffcc; border-radius: 50%; display: grid; place-items: center; color: #285348; }
+    .art-play .icon { width: 13px; height: 13px; fill: currentColor; stroke-width: 1; }
+    .b .tool-list { gap: 9px; }
+    .b .tool { min-height: 79px; border-color: #e5e8e0; border-radius: 13px; padding: 15px 12px; gap: 9px; }
+    .b .tool-icon { color: #528375; width: 32px; }
+    .b .tool strong { font-size: 13px; }
+    .b .tool small { color: #84918a; font-size: 10px; }
+    .b .primary { background: #2f6155; color: #fff; border-color: #2f6155; }
+    .b .primary:hover { background: #264f45; }
+    .b .primary .tool-icon, .b .primary .arrow { color: #d8e9e2; }
+    .b .primary small { color: #d2e2da; }
+    .b .privacy { color: #8b958e; margin: 21px 10px; }
+
+    /* C · 系统工具，平等入口与分组列表。 */
+    .c .screen { background: #f3f5f8; }
+    .c .brand { gap: 8px; }
+    .c .brand-mark { background: #fff; width: 28px; height: 28px; border-radius: 8px; }
+    .c .brand-name { color: #788394; font-size: 12px; font-weight: 500; }
+    .c .intro { margin: 48px 0 33px; }
+    .c .intro h2 { font-size: 31px; letter-spacing: -.07em; }
+    .c .intro p { margin-top: 8px; }
+    .section-label { display: flex; align-items: center; gap: 7px; font-size: 10px; color: #8090a3; margin: 0 3px 11px; }
+    .c .tool-list { background: #fff; gap: 0; border-radius: 23px; overflow: hidden; }
+    .c .tool { position: relative; min-height: 107px; border: 0; border-radius: 0; padding: 22px 16px; gap: 11px; }
+    .c .tool + .tool::before { content: ''; height: 1px; background: #edf0f4; position: absolute; top: 0; left: 64px; right: 17px; }
+    .c .tool:hover { transform: none; background: #f9fbff; }
+    .c .tool-icon { height: 37px; width: 37px; border-radius: 12px; background: #eff4ff; color: #3673de; }
+    .c .tool:nth-child(2) .tool-icon { background: #edf5f1; color: #508875; }
+    .c .tool:nth-child(3) .tool-icon { background: #f4f0f9; color: #8c6baf; }
+    .c .tool strong { font-size: 13px; }
+    .c .tool small { font-size: 10px; }
+    .c .privacy { margin-top: 26px; }
+    .bottom-caption { margin: 30px 0 0; color: #a0a8b4; font-size: 9px; text-align: center; letter-spacing: .06em; }
+
+    dialog { width: min(360px, calc(100% - 36px)); padding: 28px; border: 1px solid #e0e5eb; border-radius: 24px; color: #253247; box-shadow: 0 20px 80px #14223633; }
+    dialog::backdrop { background: #18283c55; backdrop-filter: blur(5px); }
+    dialog .eyebrow { font-size: 9px; }
+    dialog h2 { margin: 15px 0 10px; font-size: 21px; line-height: 1.5; }
+    dialog p { font-size: 13px; color: #758194; line-height: 1.8; }
+    dialog button { border: 0; border-radius: 12px; padding: 12px 17px; color: white; background: #2869e8; width: 100%; font-size: 13px; margin-top: 10px; }
+    @media (max-width: 1030px) { .gallery:not(.is-single) { grid-template-columns: minmax(0, 382px); justify-content: center; gap: 36px; } .board-head { align-items: flex-start; } }
+    @media (max-width: 600px) { .board { padding: 25px 16px; } .board-head { display: block; margin-bottom: 24px; } .board h1 { font-size: 25px; } .view-switch { margin-top: 18px; width: fit-content; } .device { padding: 3px; border-radius: 31px; } .app-content { padding-left: 20px; padding-right: 20px; } .screen { min-height: 710px; } }
+    @media (max-width: 360px) { .app-content { padding-left: 15px; padding-right: 15px; } .tool { gap: 8px; padding-left: 10px; padding-right: 10px; } .tool strong { font-size: 13px; } .photo { left: 10px; } .video-art { right: 3px; } }
+    @media (prefers-reduced-motion: reduce) { .tool { transition: none; } }
+    @media print { :root { background: white; } .board { padding: 0; } .view-switch, .concept-pick, dialog { display: none; } .gallery, .gallery.is-single { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } .concept[hidden] { display: block; } .device { box-shadow: none; } }
+  </style>
+</head>
+<body>
+  <svg class="defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="photos" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="3"/><path d="M4 8H3a1 1 0 0 0-1 1v11a2 2 0 0 0 2 2h11a1 1 0 0 0 1-1v-1M8 14l4-4 3 3 3-5 3 4"/><path d="M11 7h.01"/></symbol>
+      <symbol id="film" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 3v18M17 3v18M3 8h4M3 16h4M17 8h4M17 16h4M3 12h18"/></symbol>
+      <symbol id="stack" viewBox="0 0 24 24"><rect x="7" y="3" width="14" height="14" rx="3"/><path d="M3 8v11a2 2 0 0 0 2 2h11M12 7l5 3-5 3Z"/></symbol>
+      <symbol id="combine" viewBox="0 0 24 24"><rect x="2" y="3" width="9" height="13" rx="2"/><rect x="13" y="8" width="9" height="13" rx="2"/><path d="M4 12l2-3 3 3M17 12v5m-2-2.5h4"/></symbol>
+      <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+      <symbol id="chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+      <symbol id="lock" viewBox="0 0 24 24"><rect x="6" y="10" width="12" height="10" rx="3"/><path d="M9 10V7a3 3 0 0 1 6 0v3m-3 4v2"/></symbol>
+      <symbol id="signal" viewBox="0 0 24 24"><path d="M4 19v-3m5 3v-6m5 6V9m5 10V5"/></symbol>
+      <symbol id="wifi" viewBox="0 0 24 24"><path d="M3 8a15 15 0 0 1 18 0M6 12a10 10 0 0 1 12 0m-9 4a5 5 0 0 1 6 0m-3 3h.01"/></symbol>
+      <symbol id="battery" viewBox="0 0 24 24"><rect x="2" y="6" width="17" height="12" rx="2"/><path d="M22 10v4"/><rect x="5" y="9" width="11" height="6" rx="1" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7Z"/></symbol>
+      <symbol id="landscape" viewBox="0 0 400 230"><rect width="400" height="230" fill="#ccded2"/><circle cx="297" cy="52" r="28" fill="#f2ebcc"/><path d="M0 151 95 37l89 114 56-60 105 65 55-28v102H0Z" fill="#89aea1"/><path d="m95 37 36 46-28-10-12 15-21-16Z" fill="#e9f1df"/><path d="M0 180 52 160l66 33 60-73 90 59 58-23 74 33v41H0Z" fill="#4f8278"/><path d="M0 200c94-22 132 29 238 0s104-9 162-2v32H0Z" fill="#bad9cf"/><path d="m183 209 81 3m-148 7 49 2m100-18 34 1" stroke="#eaf2df" stroke-width="2" fill="none"/></symbol>
+    </defs>
+  </svg>
+  <main class="board">
+    <header class="board-head">
+      <div><p class="eyebrow">MOTION PHOTO CONVERTER / DESIGN STUDY</p><h1>让功能成为首页的主角。</h1><p class="board-description">三套浅色手机首页 · 同样的功能，不同的表达</p></div>
+      <nav class="view-switch" aria-label="选择查看方案">
+        <button type="button" data-view="all" aria-pressed="true">并排比较</button>
+        <button type="button" data-view="a" aria-pressed="false">方案 A</button>
+        <button type="button" data-view="b" aria-pressed="false">方案 B</button>
+        <button type="button" data-view="c" aria-pressed="false">方案 C</button>
+      </nav>
+    </header>
+    <div class="gallery" id="gallery">
+      <section class="concept a" data-concept="a" aria-labelledby="title-a">
+        <h2 class="concept-title" id="title-a"><span class="letter">A</span>极简工具台<span class="recommended">推荐</span></h2>
+        <div class="device"><div class="screen">
+          <div class="status-bar" aria-hidden="true"><span>9:41</span><span class="status-icons"><svg class="icon"><use href="#signal"/></svg><svg class="icon"><use href="#wifi"/></svg><svg class="icon"><use href="#battery"/></svg></span></div>
+          <div class="app-content">
+            <div class="brand"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#photos"/></svg></span><span class="brand-name">Motion Photo<small>Converter</small></span></div>
+            <div class="intro"><h2>让照片，<br><span>多一点动态。</span></h2><p>生成 Samsung Motion Photo</p></div>
+            <div class="tool-list">
+              <button class="tool primary" type="button" data-mode="video"><span class="primary-top"><svg class="icon" aria-hidden="true"><use href="#film"/></svg><span>从一段视频开始</span></span><span class="primary-bottom"><span class="tool-copy"><strong>视频生成动态图</strong><small>截取片段 · 选择封面</small></span><svg class="icon arrow" aria-hidden="true"><use href="#arrow"/></svg></span></button>
+              <button class="tool" type="button" data-mode="batch"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#stack"/></svg></span><span class="tool-copy"><strong>批量导入动态图</strong><small>将已有动态图转换为 Samsung 格式</small></span><svg class="icon arrow" aria-hidden="true"><use href="#chevron"/></svg></button>
+              <button class="tool" type="button" data-mode="manual"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#combine"/></svg></span><span class="tool-copy"><strong>照片和视频合成动态图</strong><small>用照片作封面，合成视频片段</small></span><svg class="icon arrow" aria-hidden="true"><use href="#chevron"/></svg></button>
+            </div>
+          </div>
+          <p class="privacy"><svg class="icon small" aria-hidden="true"><use href="#lock"/></svg>仅在本机处理，不会上传</p><div class="home-indicator" aria-hidden="true"></div>
+        </div></div>
+        <p class="concept-note"><b>功能优先，清爽直接。</b><br>一个蓝色主入口，两个轻量辅助入口。留白充分，常用功能一眼可见。</p>
+        <button class="concept-pick" type="button" data-pick="a">选择 A · 极简工具台 <svg class="icon small" aria-hidden="true"><use href="#arrow"/></svg></button>
+      </section>
+      <section class="concept b" data-concept="b" aria-labelledby="title-b">
+        <h2 class="concept-title" id="title-b"><span class="letter">B</span>轻相册</h2>
+        <div class="device"><div class="screen">
+          <div class="status-bar" aria-hidden="true"><span>9:41</span><span class="status-icons"><svg class="icon"><use href="#signal"/></svg><svg class="icon"><use href="#wifi"/></svg><svg class="icon"><use href="#battery"/></svg></span></div>
+          <div class="app-content">
+            <div class="brand"><span class="brand-name">MOTION PHOTO</span><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#photos"/></svg></span></div>
+            <div class="intro"><h2>留住这一刻的动态。</h2><p>把照片与视频，变成 Samsung 动态图</p></div>
+            <div class="media-art" aria-hidden="true"><div class="photo"><svg class="landscape" viewBox="0 0 400 230" preserveAspectRatio="xMidYMid slice"><use href="#landscape"/></svg></div><div class="video-art"><svg class="landscape" viewBox="0 0 400 230" preserveAspectRatio="xMidYMid slice"><use href="#landscape"/></svg><span class="live-tag"><span class="live-dot"></span>MOTION</span><span class="art-play"><svg class="icon"><use href="#play"/></svg></span></div></div>
+            <div class="tool-list">
+              <button class="tool primary" type="button" data-mode="video"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#film"/></svg></span><span class="tool-copy"><strong>视频生成动态图</strong><small>截取片段 · 选择封面</small></span><svg class="icon arrow" aria-hidden="true"><use href="#arrow"/></svg></button>
+              <button class="tool" type="button" data-mode="batch"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#stack"/></svg></span><span class="tool-copy"><strong>批量导入动态图</strong><small>转换已有的动态照片</small></span><svg class="icon arrow" aria-hidden="true"><use href="#chevron"/></svg></button>
+              <button class="tool" type="button" data-mode="manual"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#combine"/></svg></span><span class="tool-copy"><strong>照片和视频合成动态图</strong><small>照片作封面，视频留住动态</small></span><svg class="icon arrow" aria-hidden="true"><use href="#chevron"/></svg></button>
+            </div>
+          </div>
+          <p class="privacy"><svg class="icon small" aria-hidden="true"><use href="#lock"/></svg>仅在本机处理，不会上传</p><div class="home-indicator" aria-hidden="true"></div>
+        </div></div>
+        <p class="concept-note"><b>温和、有影像感。</b><br>米白与松绿色，少量照片叠放插画。让“照片 + 视频”的用途更直观。</p>
+        <button class="concept-pick" type="button" data-pick="b">选择 B · 轻相册 <svg class="icon small" aria-hidden="true"><use href="#arrow"/></svg></button>
+      </section>
+      <section class="concept c" data-concept="c" aria-labelledby="title-c">
+        <h2 class="concept-title" id="title-c"><span class="letter">C</span>系统工具</h2>
+        <div class="device"><div class="screen">
+          <div class="status-bar" aria-hidden="true"><span>9:41</span><span class="status-icons"><svg class="icon"><use href="#signal"/></svg><svg class="icon"><use href="#wifi"/></svg><svg class="icon"><use href="#battery"/></svg></span></div>
+          <div class="app-content">
+            <div class="brand"><span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#photos"/></svg></span><span class="brand-name">Motion Photo Converter</span></div>
+            <div class="intro"><h2>动态图工具</h2><p>轻松生成 Samsung Motion Photo</p></div>
+            <p class="section-label">选择创建方式</p>
+            <div class="tool-list">
+              <button class="tool" type="button" data-mode="video"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#film"/></svg></span><span class="tool-copy"><strong>视频生成动态图</strong><small>截取片段，选择一帧作封面</small></span><svg class="icon arrow" aria-hidden="true"><use href="#chevron"/></svg></button>
+              <button class="tool" type="button" data-mode="batch"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#stack"/></svg></span><span class="tool-copy"><strong>批量导入动态图</strong><small>一次转换多个动态照片</small></span><svg class="icon arrow" aria-hidden="true"><use href="#chevron"/></svg></button>
+              <button class="tool" type="button" data-mode="manual"><span class="tool-icon"><svg class="icon" aria-hidden="true"><use href="#combine"/></svg></span><span class="tool-copy"><strong>照片和视频合成动态图</strong><small>组合独立的照片和视频</small></span><svg class="icon arrow" aria-hidden="true"><use href="#chevron"/></svg></button>
+            </div>
+            <p class="bottom-caption">照片与视频，一起保存。</p>
+          </div>
+          <p class="privacy"><svg class="icon small" aria-hidden="true"><use href="#lock"/></svg>仅在本机处理，不会上传</p><div class="home-indicator" aria-hidden="true"></div>
+        </div></div>
+        <p class="concept-note"><b>克制、熟悉、耐看。</b><br>浅灰底色与白色分组列表，三个入口同等突出。接近 Android 系统工具的使用习惯。</p>
+        <button class="concept-pick" type="button" data-pick="c">选择 C · 系统工具 <svg class="icon small" aria-hidden="true"><use href="#arrow"/></svg></button>
+      </section>
+    </div>
+    <footer class="board-foot"><p>可点击功能入口体验反馈 · 此页为首页设计示例</p><p id="selection" aria-live="polite">选择后，在对话中告诉我 A、B 或 C 即可。</p></footer>
+  </main>
+  <dialog id="demo-dialog" aria-labelledby="demo-title" aria-describedby="demo-copy">
+    <p class="eyebrow">MOTION PHOTO / 首页交互示例</p><h2 id="demo-title"></h2><p id="demo-copy"></p><form method="dialog"><button>返回首页示例</button></form>
+  </dialog>
+  <script>
+    const gallery = document.querySelector('#gallery');
+    const viewButtons = [...document.querySelectorAll('[data-view]')];
+    const concepts = [...document.querySelectorAll('[data-concept]')];
+    const names = { a: '极简工具台', b: '轻相册', c: '系统工具' };
+    const dialog = document.querySelector('#demo-dialog');
+    const modes = {
+      video: ['视频生成动态图', '选择视频 → 截取片段 → 选择封面 → 生成动态图。支持结束渐变回封面。'],
+      batch: ['批量导入动态图', '选择包含图片和内嵌视频的文件，批量转换为 Samsung Motion Photo。支持设置封面渐变。'],
+      manual: ['照片和视频合成动态图', '选择照片作为封面，截取视频片段后合成动态图。支持图片自适应视频尺寸和结束渐变。']
+    };
+    function setView(view) {
+      gallery.classList.toggle('is-single', view !== 'all');
+      concepts.forEach((el) => { el.hidden = view !== 'all' && el.dataset.concept !== view; });
+      viewButtons.forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.view === view)));
+    }
+    viewButtons.forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
+    document.querySelectorAll('[data-mode]').forEach((button) => button.addEventListener('click', () => {
+      const [title, copy] = modes[button.dataset.mode];
+      document.querySelector('#demo-title').textContent = title;
+      document.querySelector('#demo-copy').textContent = copy;
+      dialog.showModal();
+    }));
+    document.querySelectorAll('[data-pick]').forEach((button) => button.addEventListener('click', () => {
+      const selected = button.dataset.pick;
+      document.querySelector('#selection').textContent = `已选 ${selected.toUpperCase()} · ${names[selected]}。请在对话中告诉我这个选择。`;
+      document.querySelectorAll('[data-pick]').forEach((item) => {
+        item.setAttribute('aria-pressed', String(item === button));
+        item.firstChild.textContent = `${item === button ? '已选' : '选择'} ${item.dataset.pick.toUpperCase()} · ${names[item.dataset.pick]} `;
+      });
+      setView(selected);
+      document.querySelector('.board-head').scrollIntoView({ behavior: 'auto' });
+    }));
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) { const rect = dialog.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close(); } });
+  </script>
+</body>
+</html>
