@@ -6,7 +6,7 @@
 
 - Node.js `>= 22.13.0`
 - JDK 17
-- Android SDK Platform 35
+- Android SDK Platform 36
 - Android SDK Build Tools 36.0.0
 - Gradle Wrapper 8.13（项目已提供）
 
@@ -37,6 +37,8 @@ app/src/main/assets/           Android 使用的 Web 构建产物
 ```
 
 Web 页面通过 `npm run build:android` 构建到 `app/src/main/assets/`，Android 的 `MainActivity` 使用 WebView 加载这些本地资源。不要直接编辑 `app/src/main/assets/`。
+
+封面渐变优先只编码末帧到封面的短尾段，再将原视频画面与音轨无损封装进输出。Android 版会先尝试设备的 H.264/H.265 硬件编码器；浏览器版及无硬件支持的 H.264 视频由 FFmpeg WebAssembly 编码短尾段。若编码格式或拼接不兼容，会回退到完整重编码。更改 Web 处理逻辑后须重新运行 `build:android` 并构建 APK。
 
 ## Web 开发
 
