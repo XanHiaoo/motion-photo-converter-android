@@ -31,6 +31,14 @@ cd ..
 
 `web/` 是可独立维护的源码副本。网页改动后须重新运行 `build:android`，它会把产物写入 `app/src/main/assets/`，再构建 APK。不要直接编辑编译后的 `assets/` 文件。
 
+## GitHub Pages 预览
+
+仓库已配置 GitHub Actions 自动部署网页预览。每次推送到 `main` 后，Actions 会安装 `web/` 依赖、运行 `npm run build`，并将 `web/dist/` 发布到 GitHub Pages。
+
+首次使用时，在 GitHub 仓库中打开 `Settings` → `Pages`，将 `Build and deployment` 的 `Source` 设置为 `GitHub Actions`。之后可在 Actions 页面手动运行 `Deploy web preview to GitHub Pages`，或直接推送代码触发部署。
+
+预览地址：`https://xanhiaoo.github.io/motion-photo-converter-android/`
+
 ## 使用与限制
 
 最低支持 Android 10（API 29）。导入文件由系统文件选择器授权；保存结果通过 MediaStore 进入相册目录。需要较新的 Android System WebView 来运行 Web Worker、WebAssembly 及本地视频画面提取。部分视频编码仍可能无法由设备解码或被三星相册播放；最终兼容性请在目标三星机型上验证。
