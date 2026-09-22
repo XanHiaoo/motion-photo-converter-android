@@ -1,7 +1,7 @@
 {
   "name": "三星动态照片转换器",
   "short_name": "Motion Photo",
-  "description": "在设备本地将动态照片转换为 Samsung Motion Photo。",
+  "description": "在本机将视频、动态图或照片视频转换为 Samsung Motion Photo。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
