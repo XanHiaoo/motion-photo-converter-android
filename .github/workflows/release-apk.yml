@@ -53,7 +53,8 @@ jobs:
 
       - name: Build release APK
         env:
-          ANDROID_RELEASE_KEYSTORE: app/release-key.jks
+          # app/build.gradle resolves relative paths from the app module.
+          ANDROID_RELEASE_KEYSTORE: release-key.jks
           ANDROID_RELEASE_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}
           ANDROID_RELEASE_KEY_ALIAS: ${{ secrets.ANDROID_RELEASE_KEY_ALIAS }}
           ANDROID_RELEASE_KEY_PASSWORD: ${{ secrets.ANDROID_RELEASE_KEY_PASSWORD }}
