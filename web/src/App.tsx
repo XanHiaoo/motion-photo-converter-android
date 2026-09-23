@@ -20,7 +20,7 @@ import { formatBytes, locateEmbeddedMotionParts, outputName, type MediaAnalysis 
 import { convertEmbeddedMotionFile } from './lib/embedded-convert';
 import { normalizeImage, resizeImageToSize } from './lib/image-normalize';
 import { captureVideoFrame, createTimelineThumbnails } from './lib/video-frame';
-import { addCoverFade, DEFAULT_COVER_FADE_SECONDS, MAX_COVER_FADE_SECONDS, MIN_COVER_FADE_SECONDS, normalizeVideo, trimVideo } from './lib/video-remux';
+import { addCoverFade, MAX_COVER_FADE_SECONDS, MIN_COVER_FADE_SECONDS, normalizeVideo, trimVideo } from './lib/video-remux';
 import { readVideoDimensions } from './lib/video-metadata';
 import { clampClipEnd, clampClipStart, clampCoverTime, CLIP_TIME_STEP, coverOffsetInClip, formatClipTime, isClipTrimmed, MIN_CLIP_SECONDS, snapClipTime, type TrimMode } from './lib/video-trim';
 import { analyzeFile, muxFiles } from './lib/worker-client';
@@ -42,6 +42,7 @@ interface MotionTask {
 const IMAGE_ACCEPT = '.jpg,.jpeg,.heic,.heif,.png,image/jpeg,image/heic,image/heif,image/png';
 const MOTION_ACCEPT = '.jpg,.jpeg,.heic,.heif,image/jpeg,image/heic,image/heif';
 const VIDEO_ACCEPT = '.mp4,.mov,video/mp4,video/quicktime';
+const DEFAULT_UI_COVER_FADE_SECONDS = 0.5;
 
 function download(url: string, name: string) {
   if (window.AndroidBridge) {
@@ -145,7 +146,7 @@ function MotionFileMode({ onBack }: { onBack: () => void }) {
   const [tasks, setTasks] = useState<MotionTask[]>([]);
   const [dragging, setDragging] = useState(false);
   const [fadeToCover, setFadeToCover] = useState(true);
-  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_COVER_FADE_SECONDS);
+  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_UI_COVER_FADE_SECONDS);
 
   useEffect(() => { tasksRef.current = tasks; }, [tasks]);
   useEffect(() => () => {
@@ -326,7 +327,7 @@ function ManualMode({ onBack }: { onBack: () => void }) {
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [fitImageToVideo, setFitImageToVideo] = useState(false);
   const [fadeToCover, setFadeToCover] = useState(true);
-  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_COVER_FADE_SECONDS);
+  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_UI_COVER_FADE_SECONDS);
   const [status, setStatus] = useState<Status>('idle');
   const [stage, setStage] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -548,15 +549,15 @@ function ManualMode({ onBack }: { onBack: () => void }) {
           {duration > 0 ? (
             <>
               <ClipRangeSelector duration={duration} start={clipStart} end={clipEnd} coverTime={null} frames={timelineFrames} disabled={status === 'working' || status === 'analyzing'} viewport={timelineViewport} onViewportChange={setTimelineViewport} onStartChange={selectClipStart} onEndChange={selectClipEnd} />
+              <div className="clip-preview-controls">
+                <CoverFadeOptions enabled={fadeToCover} seconds={coverFadeSeconds} disabled={!frameReady || status === 'working' || status === 'analyzing'} onEnabledChange={setFadeToCover} onSecondsChange={setCoverFadeSeconds} />
+                <button className="clip-preview-button" type="button" disabled={!frameReady || status === 'working' || status === 'analyzing'} onClick={() => void previewClip()}>{isPreviewing ? '暂停预览' : '预览片段'}</button>
+              </div>
               <div className="trim-method" role="group" aria-label="裁剪方式">
                 <button type="button" className={trimMode === 'fast' ? 'is-selected' : ''} aria-pressed={trimMode === 'fast'} disabled={status === 'working'} onClick={() => selectTrimMode('fast')}>快速裁剪</button>
                 <button type="button" className={trimMode === 'precise' ? 'is-selected' : ''} aria-pressed={trimMode === 'precise'} disabled={status === 'working'} onClick={() => selectTrimMode('precise')}>精确裁剪</button>
               </div>
               <p className="trim-method-note">{trimMode === 'fast' ? '快速：速度快；起点可能略有偏差。' : '精确：重新编码 H.264，边界更准但更慢。'}</p>
-              <div className="clip-preview-controls">
-                <button className="clip-preview-button" type="button" disabled={!frameReady || status === 'working' || status === 'analyzing'} onClick={() => void previewClip()}>{isPreviewing ? '暂停预览' : '预览片段'}</button>
-                <CoverFadeOptions enabled={fadeToCover} seconds={coverFadeSeconds} disabled={!frameReady || status === 'working' || status === 'analyzing'} onEnabledChange={setFadeToCover} onSecondsChange={setCoverFadeSeconds} />
-              </div>
             </>
           ) : null}
           <p>照片作为封面；未裁剪时使用完整视频。</p>
@@ -801,7 +802,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   const [showFirstFramePreview, setShowFirstFramePreview] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [fadeToCover, setFadeToCover] = useState(true);
-  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_COVER_FADE_SECONDS);
+  const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_UI_COVER_FADE_SECONDS);
   const [showCoverTransition, setShowCoverTransition] = useState(false);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
   const coverTransitionTimerRef = useRef<number | null>(null);
@@ -1111,19 +1112,17 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
           {duration > 0 ? (
             <>
               <ClipRangeSelector duration={duration} start={clipStart} end={clipEnd} coverTime={selectedTime} frames={timelineFrames} disabled={status === 'working'} viewport={timelineViewport} onViewportChange={setTimelineViewport} onStartChange={selectClipStart} onEndChange={selectClipEnd} />
+              <label className="frame-slider-label" htmlFor="cover-time">拖动选择封面</label>
+              <input id="cover-time" className="frame-slider" type="range" min={clipStart} max={clampCoverTime(clipEnd, clipStart, clipEnd)} step={CLIP_TIME_STEP} value={selectedTime} disabled={status === 'working'} onChange={(event) => selectFrame(Number(event.currentTarget.value))} />
+              <div className="clip-preview-controls">
+                <CoverFadeOptions enabled={fadeToCover} seconds={coverFadeSeconds} disabled={!frameReady || status === 'working'} onEnabledChange={(enabled) => { setFadeToCover(enabled); setShowCoverTransition(false); }} onSecondsChange={setCoverFadeSeconds} />
+                <button className="clip-preview-button" type="button" disabled={!frameReady || status === 'working'} onClick={() => void previewClip()}>{isPreviewing ? '暂停预览' : '预览片段'}</button>
+              </div>
               <div className="trim-method" role="group" aria-label="裁剪方式">
                 <button type="button" className={trimMode === 'fast' ? 'is-selected' : ''} aria-pressed={trimMode === 'fast'} disabled={status === 'working'} onClick={() => selectTrimMode('fast')}>快速裁剪</button>
                 <button type="button" className={trimMode === 'precise' ? 'is-selected' : ''} aria-pressed={trimMode === 'precise'} disabled={status === 'working'} onClick={() => selectTrimMode('precise')}>精确裁剪</button>
               </div>
               <p className="trim-method-note">{trimMode === 'fast' ? '快速：复制原视频，速度快；起点可能略有偏差。' : '精确：重新编码 H.264，边界更准但更慢。'}</p>
-              <div className="clip-preview-controls">
-                <button className="clip-preview-button" type="button" disabled={!frameReady || status === 'working'} onClick={() => void previewClip()}>{isPreviewing ? '暂停预览' : '预览片段'}</button>
-                <CoverFadeOptions enabled={fadeToCover} seconds={coverFadeSeconds} disabled={!frameReady || status === 'working'} onEnabledChange={(enabled) => { setFadeToCover(enabled); setShowCoverTransition(false); }} onSecondsChange={setCoverFadeSeconds} />
-              </div>
-              <div className="frame-heading cover-heading"><strong>选择封面</strong><span>{formatClipTime(selectedTime)}</span></div>
-              <label className="frame-slider-label" htmlFor="cover-time">拖动选择封面</label>
-              <input id="cover-time" className="frame-slider" type="range" min={clipStart} max={clampCoverTime(clipEnd, clipStart, clipEnd)} step={CLIP_TIME_STEP} value={selectedTime} disabled={status === 'working'} onChange={(event) => selectFrame(Number(event.currentTarget.value))} />
-              <div className="frame-endpoints"><span>片段开始</span><span>片段结束</span></div>
             </>
           ) : null}
           <p>封面保存为 JPEG；未裁剪时使用完整视频。</p>
