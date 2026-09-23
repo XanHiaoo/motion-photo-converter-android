@@ -18,9 +18,9 @@ Release 构建需要一个本地 keystore。建议将签名文件放在仓库目
 在项目根目录执行。以下命令会在项目同级目录创建签名文件夹：
 
 ```powershell
-New-Item -ItemType Directory -Force (Join-Path (Split-Path $PWD -Parent) 'motion-photo-converter-signing') | Out-Null
+New-Item -ItemType Directory -Force (Join-Path (Split-Path $PWD -Parent) 'motion-photo-tool-signing') | Out-Null
 keytool -genkeypair -v `
-  -keystore (Join-Path (Split-Path $PWD -Parent) 'motion-photo-converter-signing\release-key.jks') `
+  -keystore (Join-Path (Split-Path $PWD -Parent) 'motion-photo-tool-signing\release-key.jks') `
   -alias motion-photo-release `
   -keyalg RSA `
   -keysize 2048 `
@@ -30,7 +30,7 @@ keytool -genkeypair -v `
 Linux/macOS 使用以下命令：
 
 ```bash
-signing_dir="../motion-photo-converter-signing"
+signing_dir="../motion-photo-tool-signing"
 mkdir -p "$signing_dir"
 keytool -genkeypair -v \
   -keystore "$signing_dir/release-key.jks" \
@@ -55,7 +55,7 @@ keyPassword=你的-key-密码
 构建前设置配置文件路径：
 
 ```powershell
-$env:ANDROID_KEYSTORE_PROPERTIES = Join-Path (Split-Path $PWD -Parent) 'motion-photo-converter-signing\keystore.properties'
+$env:ANDROID_KEYSTORE_PROPERTIES = Join-Path (Split-Path $PWD -Parent) 'motion-photo-tool-signing\keystore.properties'
 ```
 
 不要将真实密码写入 README、工作流或 Git 提交记录。
@@ -116,7 +116,7 @@ ANDROID_RELEASE_KEY_PASSWORD
 Windows PowerShell 生成 Base64：
 
 ```powershell
-$base64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path (Split-Path $PWD -Parent) 'motion-photo-converter-signing\release-key.jks')))
+$base64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes((Join-Path (Split-Path $PWD -Parent) 'motion-photo-tool-signing\release-key.jks')))
 Set-Clipboard $base64
 ```
 
@@ -146,6 +146,6 @@ git push origin v1.0.1
 1. 构建 Android Web 资源。
 2. 使用 GitHub Secrets 解码 keystore。
 3. 执行 `assembleRelease`。
-4. 生成并上传 `MotionPhotoConverter-v1.0.1.apk`。
+4. 生成并上传 `MotionPhotoTool-v1.0.1.apk`。
 
 普通推送到 `main` 只会触发 GitHub Pages 部署，不会创建 APK Release。

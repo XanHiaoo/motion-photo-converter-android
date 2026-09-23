@@ -1,4 +1,4 @@
-const CACHE = 'motion-photo-converter-v3';
+const CACHE = 'motion-photo-tool-v1';
 const BASE = self.registration.scope;
 
 self.addEventListener('install', (event) => {

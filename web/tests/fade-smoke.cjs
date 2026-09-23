@@ -16,7 +16,7 @@ const { execFileSync } = require('child_process');
   try {
     const page = await browser.newPage({ acceptDownloads: true });
     page.on('pageerror', (error) => process.stderr.write(`PAGE ERROR: ${error.message}\n`));
-    await page.goto('http://127.0.0.1:5175/samsung-motion-photo-converter/');
+    await page.goto('http://127.0.0.1:5175/samsung-motion-photo-tool/');
     await page.getByRole('button', { name: /视频生成动态图/ }).click();
     await page.locator('input[type=file]').setInputFiles(source);
     await page.waitForFunction(() => Number.isFinite(document.querySelector('video')?.duration));

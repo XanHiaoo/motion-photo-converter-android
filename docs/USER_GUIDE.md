@@ -1,6 +1,6 @@
-# Motion Photo Converter 使用指南
+# Motion Photo Tool 使用指南
 
-Motion Photo Converter 用于把视频、动态图片或照片与视频转换为 Samsung Motion Photo。
+Motion Photo Tool 用于把视频、动态图片或照片与视频转换为 Samsung Motion Photo。
 
 所有处理都在当前设备完成，文件不会上传到服务器。
 
@@ -10,13 +10,13 @@ Motion Photo Converter 用于把视频、动态图片或照片与视频转换为
 
 打开在线预览：
 
-<https://xanhiaoo.github.io/samsung-motion-photo-converter/>
+<https://xanhiaoo.github.io/samsung-motion-photo-tool/>
 
 建议使用较新的 Samsung Internet 或 Android Chrome。首次打开或更新版本后，如果页面显示异常，可以刷新页面或清除站点缓存。
 
 ### Android 版
 
-安装 GitHub Release 中的 APK 后，直接打开应用即可。应用通过系统文件选择器读取文件，导出结果会保存到相册中的 Motion Photo Converter 目录。
+安装 GitHub Release 中的 APK 后，直接打开应用即可。应用通过系统文件选择器读取文件，导出结果会保存到相册中的 Motion Photo Tool 目录。
 
 ## 三种功能
 
@@ -83,9 +83,9 @@ Motion Photo Converter 用于把视频、动态图片或照片与视频转换为
 
 ### 找不到导出的文件
 
-请在系统相册中查看“Motion Photo Converter”目录，也可以使用系统文件管理器搜索最近生成的文件。
+请在系统相册中查看“Motion Photo Tool”目录，也可以使用系统文件管理器搜索最近生成的文件。
 
 ## 其他文档
 
 - [开发者 README](../README.md)
-- [PDF 用户手册](motion-photo-converter-user-guide.pdf)
+- [PDF 用户手册](motion-photo-tool-user-guide.pdf)

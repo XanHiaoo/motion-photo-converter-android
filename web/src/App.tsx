@@ -40,7 +40,9 @@ interface MotionTask {
 }
 
 const IMAGE_ACCEPT = '.jpg,.jpeg,.heic,.heif,.png,image/jpeg,image/heic,image/heif,image/png';
-const MOTION_ACCEPT = '.jpg,.jpeg,.heic,.heif,image/jpeg,image/heic,image/heif';
+// Android photo pickers may return Motion Photos as a generic image/* URI.
+// The parser still validates the actual embedded MP4/MOV structure after selection.
+const MOTION_ACCEPT = 'image/*,.jpg,.jpeg,.heic,.heif';
 const VIDEO_ACCEPT = '.mp4,.mov,video/mp4,video/quicktime';
 const DEFAULT_UI_COVER_FADE_SECONDS = 0.5;
 
@@ -1138,8 +1140,8 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
 function Home({ onOpen }: { onOpen: (view: View) => void }) {
   return (
     <main className="home-shell home-minimal">
-      <header className="brand-row"><div className="brand-mark"><img className="brand-logo" src="./motion-photo-icon-functional-simple-approved.svg" alt="" aria-hidden="true" /></div><div className="brand-name"><strong><span className="brand-word-main">Motion Photo</span><span className="brand-word-sub">Converter</span></strong></div></header>
-      <section className="home-intro" aria-label="Motion Photo Converter 首页">
+      <header className="brand-row"><div className="brand-mark"><img className="brand-logo" src="./motion-photo-icon-functional-simple-approved.svg" alt="" aria-hidden="true" /></div><div className="brand-name"><strong><span className="brand-word-main">Motion Photo</span><span className="brand-word-sub">Tool</span></strong></div></header>
+      <section className="home-intro" aria-label="Motion Photo Tool 首页">
         <h1>动态图工具</h1>
         <p>轻松生成 Samsung Motion Photo</p>
       </section>

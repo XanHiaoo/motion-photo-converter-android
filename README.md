@@ -1,10 +1,10 @@
-# Samsung Motion Photo Converter
+# Motion Photo Tool
 
 一个面向三星 Motion Photo 的本地转换工具，提供 Web 预览版和 Android WebView 封装版。
 
 项目使用 React + Vite 实现界面和媒体处理逻辑，Android 端通过 WebView 离线加载 Web 资源。所有媒体处理均在本机完成，不上传用户文件。
 
-[在线预览](https://xanhiaoo.github.io/samsung-motion-photo-converter/) · [GitHub Actions](https://github.com/XanHiaoo/samsung-motion-photo-converter/actions)
+[在线预览](https://xanhiaoo.github.io/samsung-motion-photo-tool/) · [GitHub Actions](https://github.com/XanHiaoo/samsung-motion-photo-tool/actions)
 
 ## 功能
 
@@ -17,7 +17,7 @@
 ## 界面预览
 
 <div align="center">
-  <img src="docs/images/home-preview.png" alt="Motion Photo Converter 首页" width="240" />
+  <img src="docs/images/home-preview.png" alt="Motion Photo Tool 首页" width="240" />
   <img src="docs/images/video-preview.png" alt="视频生成 Motion Photo 页面" width="240" />
   <p><sub>首页与视频生成界面</sub></p>
 </div>
@@ -49,7 +49,7 @@ npm ci
 npm run dev -- --host 127.0.0.1 --strictPort
 ```
 
-访问 <http://127.0.0.1:5173/samsung-motion-photo-converter/>。
+访问 <http://127.0.0.1:5173/samsung-motion-photo-tool/>。
 
 也可以在 VS Code 中使用 Run and Debug，或执行 `Tasks: Run Task` → `web:dev`。
 
@@ -90,7 +90,7 @@ docs/                 用户指南、开发指南和发布指南
 ## 文档
 
 - [用户使用指南](docs/USER_GUIDE.md)
-- [用户使用手册 PDF](docs/motion-photo-converter-user-guide.pdf)
+- [用户使用手册 PDF](docs/motion-photo-tool-user-guide.pdf)
 - [开发指南](docs/DEVELOPMENT.md)
 - [发布指南](docs/RELEASE.md)
 
