@@ -321,6 +321,8 @@ function ManualMode({ onBack }: { onBack: () => void }) {
   const [timelineFrames, setTimelineFrames] = useState<string[]>([]);
   const [timelineViewport, setTimelineViewport] = useState<TimelineViewport>({ start: 0, end: 0 });
   const [frameReady, setFrameReady] = useState(false);
+  const [firstFramePreviewUrl, setFirstFramePreviewUrl] = useState<string | null>(null);
+  const [showFirstFramePreview, setShowFirstFramePreview] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [fitImageToVideo, setFitImageToVideo] = useState(false);
   const [fadeToCover, setFadeToCover] = useState(true);
@@ -333,6 +335,32 @@ function ManualMode({ onBack }: { onBack: () => void }) {
 
   useEffect(() => () => { if (videoUrl) URL.revokeObjectURL(videoUrl); }, [videoUrl]);
   useEffect(() => () => { if (result) URL.revokeObjectURL(result.url); }, [result]);
+  useEffect(() => () => { if (firstFramePreviewUrl) URL.revokeObjectURL(firstFramePreviewUrl); }, [firstFramePreviewUrl]);
+  useEffect(() => {
+    if (!videoUrl || !frameReady || !videoRef.current) {
+      setFirstFramePreviewUrl(null);
+      return;
+    }
+    let cancelled = false;
+    let generatedUrl: string | null = null;
+    void captureVideoFrame(videoRef.current, 'first-frame.mp4', 0)
+      .then((image) => {
+        generatedUrl = URL.createObjectURL(image);
+        if (cancelled) {
+          URL.revokeObjectURL(generatedUrl);
+          return;
+        }
+        setFirstFramePreviewUrl(generatedUrl);
+        setShowFirstFramePreview(true);
+      })
+      .catch(() => {
+        if (!cancelled) setFirstFramePreviewUrl(null);
+      });
+    return () => {
+      cancelled = true;
+      if (generatedUrl) URL.revokeObjectURL(generatedUrl);
+    };
+  }, [videoUrl, frameReady]);
   useEffect(() => {
     if (!videoUrl || duration <= 0) {
       setTimelineViewport({ start: 0, end: 0 });
@@ -400,6 +428,8 @@ function ManualMode({ onBack }: { onBack: () => void }) {
     setClipEnd(0);
     setTimelineViewport({ start: 0, end: 0 });
     setFrameReady(false);
+    setFirstFramePreviewUrl(null);
+    setShowFirstFramePreview(false);
     setIsPreviewing(false);
     setResult(null);
     setError(null);
@@ -428,6 +458,7 @@ function ManualMode({ onBack }: { onBack: () => void }) {
       element.pause();
       element.currentTime = seconds;
     }
+    setShowFirstFramePreview(false);
     setIsPreviewing(false);
     setResult(null);
     setError(null);
@@ -461,6 +492,7 @@ function ManualMode({ onBack }: { onBack: () => void }) {
       return;
     }
     try {
+      setShowFirstFramePreview(false);
       element.currentTime = clipStart;
       await element.play();
       setIsPreviewing(true);
@@ -511,6 +543,7 @@ function ManualMode({ onBack }: { onBack: () => void }) {
               }}
               onError={() => { setFrameReady(false); setError('浏览器无法预览该视频，请使用 H.264 MP4。'); }}
             />
+            {firstFramePreviewUrl ? <img className={`frame-initial-preview ${showFirstFramePreview ? 'is-visible' : ''}`} src={firstFramePreviewUrl} alt="视频第一帧预览" aria-hidden="true" /> : null}
           </div>
           {duration > 0 ? (
             <>
@@ -680,6 +713,8 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   const [timelineFrames, setTimelineFrames] = useState<string[]>([]);
   const [timelineViewport, setTimelineViewport] = useState<TimelineViewport>({ start: 0, end: 0 });
   const [frameReady, setFrameReady] = useState(false);
+  const [firstFramePreviewUrl, setFirstFramePreviewUrl] = useState<string | null>(null);
+  const [showFirstFramePreview, setShowFirstFramePreview] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [fadeToCover, setFadeToCover] = useState(true);
   const [coverFadeSeconds, setCoverFadeSeconds] = useState(DEFAULT_COVER_FADE_SECONDS);
@@ -697,6 +732,32 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
   useEffect(() => () => { if (videoUrl) URL.revokeObjectURL(videoUrl); }, [videoUrl]);
   useEffect(() => () => { if (result) URL.revokeObjectURL(result.url); }, [result]);
   useEffect(() => () => { if (coverPreviewUrl) URL.revokeObjectURL(coverPreviewUrl); }, [coverPreviewUrl]);
+  useEffect(() => () => { if (firstFramePreviewUrl) URL.revokeObjectURL(firstFramePreviewUrl); }, [firstFramePreviewUrl]);
+  useEffect(() => {
+    if (!videoUrl || !frameReady || !videoRef.current) {
+      setFirstFramePreviewUrl(null);
+      return;
+    }
+    let cancelled = false;
+    let generatedUrl: string | null = null;
+    void captureVideoFrame(videoRef.current, 'first-frame.mp4', 0)
+      .then((image) => {
+        generatedUrl = URL.createObjectURL(image);
+        if (cancelled) {
+          URL.revokeObjectURL(generatedUrl);
+          return;
+        }
+        setFirstFramePreviewUrl(generatedUrl);
+        setShowFirstFramePreview(true);
+      })
+      .catch(() => {
+        if (!cancelled) setFirstFramePreviewUrl(null);
+      });
+    return () => {
+      cancelled = true;
+      if (generatedUrl) URL.revokeObjectURL(generatedUrl);
+    };
+  }, [videoUrl, frameReady]);
   useEffect(() => () => {
     if (coverTransitionTimerRef.current !== null) {
       window.clearTimeout(coverTransitionTimerRef.current);
@@ -766,6 +827,8 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
     setSelectedTime(0);
     setTimelineViewport({ start: 0, end: 0 });
     setFrameReady(false);
+    setFirstFramePreviewUrl(null);
+    setShowFirstFramePreview(false);
     setIsPreviewing(false);
     setShowCoverTransition(false);
     setCoverPreviewUrl(null);
@@ -802,6 +865,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
       element.pause();
       element.currentTime = time;
     }
+    setShowFirstFramePreview(false);
     setIsPreviewing(false);
     setShowCoverTransition(false);
     setResult(null);
@@ -848,6 +912,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
         coverTransitionTimerRef.current = null;
       }
       setShowCoverTransition(false);
+      setShowFirstFramePreview(false);
       element.currentTime = clipStart;
       await element.play();
       setIsPreviewing(true);
@@ -956,6 +1021,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
               }}
               onError={() => { setFrameReady(false); setError('浏览器无法预览该视频，请使用 H.264 MP4。'); }}
             />
+            {firstFramePreviewUrl ? <img className={`frame-initial-preview ${showFirstFramePreview ? 'is-visible' : ''}`} src={firstFramePreviewUrl} alt="视频第一帧预览" aria-hidden="true" /> : null}
             {coverPreviewUrl ? <img className="frame-cover-preview" src={coverPreviewUrl} alt="选定的封面预览" aria-hidden="true" /> : null}
           </div>
           {duration > 0 ? (

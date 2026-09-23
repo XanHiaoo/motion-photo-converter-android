@@ -136,6 +136,8 @@ h1, h2, p { margin: 0; }
 .frame-heading span { color: var(--blue); font-size: 12px; font-variant-numeric: tabular-nums; font-weight: 750; }
 .frame-preview-stage { width: 100%; max-height: 340px; aspect-ratio: 16 / 9; margin-top: 13px; position: relative; overflow: hidden; border-radius: 15px; background: #09101b; }
 .frame-preview { width: 100%; height: 100%; display: block; object-fit: contain; background: #09101b; }
+.frame-initial-preview { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; display: block; object-fit: contain; background: #09101b; opacity: 0; pointer-events: none; transition: opacity 120ms ease; }
+.frame-initial-preview.is-visible { opacity: 1; }
 .frame-cover-preview { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; display: block; object-fit: contain; background: #09101b; opacity: 0; pointer-events: none; transition: opacity var(--cover-fade-duration, 1200ms) ease; }
 .frame-preview-stage.is-showing-cover .frame-cover-preview { opacity: 1; }
 .clip-range-group { margin-top: 18px; }
