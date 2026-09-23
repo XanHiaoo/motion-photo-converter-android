@@ -594,9 +594,24 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
   onEndChange: (seconds: number) => void;
 }) {
   const railRef = useRef<HTMLDivElement>(null);
-  const activePointer = useRef<{ id: number; handle: 'start' | 'end' } | null>(null);
+  const activePointer = useRef<{
+    id: number;
+    mode: 'handle' | 'selection';
+    handle: 'start' | 'end';
+    selectionOffset?: number;
+    selectionDuration?: number;
+  } | null>(null);
+  const localViewportRef = useRef<TimelineViewport>(viewport);
+  const dragScrollTimeRef = useRef<number | null>(null);
+  const [magneticEdge, setMagneticEdge] = useState<'start' | 'end' | null>(null);
+  const [activeHandle, setActiveHandle] = useState<'start' | 'end' | null>(null);
+  const [activeInteraction, setActiveInteraction] = useState<'handle' | 'selection' | null>(null);
   const [localViewport, setLocalViewport] = useState<TimelineViewport>(viewport);
-  useEffect(() => setLocalViewport(viewport), [viewport.start, viewport.end, duration]);
+  useEffect(() => {
+    localViewportRef.current = viewport;
+    setLocalViewport(viewport);
+  }, [viewport.start, viewport.end, duration]);
+  useEffect(() => { localViewportRef.current = localViewport; }, [localViewport]);
   const viewStart = Math.max(0, Math.min(localViewport.start, duration));
   const viewEnd = Math.min(duration, Math.max(viewStart + 0.05, localViewport.end));
   const viewDuration = Math.max(0.05, viewEnd - viewStart);
@@ -608,52 +623,118 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
   const overviewViewStartPercent = duration > 0 ? viewStart / duration * 100 : 0;
   const overviewViewEndPercent = duration > 0 ? viewEnd / duration * 100 : 100;
 
-  const timeAtPointer = (clientX: number) => {
-    const rect = railRef.current?.getBoundingClientRect();
-    return rect ? viewStart + ((clientX - rect.left) / rect.width) * viewDuration : 0;
+  const getViewportMetrics = (candidate: TimelineViewport = localViewportRef.current) => {
+    const start = Math.max(0, Math.min(candidate.start, duration));
+    const end = Math.min(duration, Math.max(start + 0.05, candidate.end));
+    return { start, end, duration: Math.max(0.05, end - start) };
   };
 
-  const moveHandle = (handle: 'start' | 'end', seconds: number) => {
-    const snapped = snapClipTime(seconds);
+  const timeAtPointer = (clientX: number, metrics = getViewportMetrics()) => {
+    const rect = railRef.current?.getBoundingClientRect();
+    return rect ? metrics.start + ((clientX - rect.left) / rect.width) * metrics.duration : 0;
+  };
+
+  const moveHandle = (handle: 'start' | 'end', seconds: number, rect?: DOMRect, visibleDuration = viewDuration) => {
+    let snapped = snapClipTime(seconds);
+    let nextMagneticEdge: 'start' | 'end' | null = null;
+    if (rect && rect.width > 0) {
+      const edgeSnapSeconds = Math.min(0.5, Math.max(CLIP_TIME_STEP, visibleDuration * 14 / rect.width));
+      if (handle === 'start' && seconds <= edgeSnapSeconds) {
+        snapped = 0;
+        nextMagneticEdge = 'start';
+      } else if (handle === 'end' && duration - seconds <= edgeSnapSeconds) {
+        snapped = duration;
+        nextMagneticEdge = 'end';
+      }
+    }
+    setMagneticEdge(nextMagneticEdge);
     if (handle === 'start') onStartChange(clampClipStart(snapped, end, duration));
     else onEndChange(clampClipEnd(snapped, start, duration));
   };
 
   const pointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (disabled) return;
+    event.preventDefault();
     const target = (event.target as HTMLElement).closest<HTMLElement>('[data-handle]');
-    const seconds = timeAtPointer(event.clientX);
     const rect = railRef.current?.getBoundingClientRect();
-    const overlapping = rect && duration > 0 && (end - start) / viewDuration * rect.width < 34;
+    const metrics = getViewportMetrics();
+    const seconds = timeAtPointer(event.clientX, metrics);
+    const overlapping = rect && duration > 0 && (end - start) / metrics.duration * rect.width < 52;
     const nearest = overlapping && rect
-      ? event.clientX <= rect.left + ((start + end) / 2 - viewStart) / viewDuration * rect.width ? 'start' : 'end'
+      ? event.clientX <= rect.left + ((start + end) / 2 - metrics.start) / metrics.duration * rect.width ? 'start' : 'end'
       : Math.abs(seconds - start) <= Math.abs(seconds - end) ? 'start' : 'end';
-    let handle: 'start' | 'end' = nearest;
-    if (!overlapping && (target?.dataset.handle === 'start' || target?.dataset.handle === 'end')) handle = target.dataset.handle;
-    activePointer.current = { id: event.pointerId, handle };
+    const targetHandle = target?.dataset.handle === 'start' || target?.dataset.handle === 'end' ? target.dataset.handle : null;
+    const draggingSelection = !targetHandle && seconds >= start && seconds <= end && end > start;
+    const handle: 'start' | 'end' = targetHandle ?? nearest;
+    activePointer.current = draggingSelection
+      ? { id: event.pointerId, mode: 'selection', handle, selectionOffset: seconds - start, selectionDuration: end - start }
+      : { id: event.pointerId, mode: 'handle', handle };
+    dragScrollTimeRef.current = performance.now();
+    setActiveHandle(draggingSelection ? null : handle);
+    setActiveInteraction(draggingSelection ? 'selection' : 'handle');
+    setMagneticEdge(null);
     event.currentTarget.setPointerCapture(event.pointerId);
-    if (target && !overlapping) target.focus();
-    if (!target) moveHandle(handle, seconds);
+    if (targetHandle) target?.focus();
+    if (!draggingSelection && !targetHandle) moveHandle(handle, seconds, rect ?? undefined);
   };
 
   const pointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     const active = activePointer.current;
     const rect = railRef.current?.getBoundingClientRect();
     if (!active || active.id !== event.pointerId || !rect) return;
-    const seconds = timeAtPointer(event.clientX);
-    if (active.handle === 'start' && seconds < viewStart && viewStart > 0) {
-      const next = { start: Math.max(0, seconds - viewDuration * 0.15), end: viewEnd };
-      setLocalViewport(next);
-    } else if (active.handle === 'end' && seconds > viewEnd && viewEnd < duration) {
-      const next = { start: viewStart, end: Math.min(duration, seconds + viewDuration * 0.15) };
-      setLocalViewport(next);
+    const metrics = getViewportMetrics();
+    const pointerX = event.clientX - rect.left;
+    const edgeZone = Math.min(36, Math.max(24, rect.width * 0.08));
+    const nearLeft = pointerX < edgeZone && metrics.start > 0;
+    const nearRight = pointerX > rect.width - edgeZone && metrics.end < duration;
+    let activeMetrics = metrics;
+    let seconds = timeAtPointer(event.clientX, metrics);
+    const now = performance.now();
+    if (nearLeft || nearRight) {
+      const previous = dragScrollTimeRef.current ?? now;
+      const elapsed = Math.min(0.08, Math.max(0, (now - previous) / 1000));
+      dragScrollTimeRef.current = now;
+      const distance = nearLeft ? edgeZone - pointerX : pointerX - (rect.width - edgeZone);
+      const strength = Math.min(1, Math.max(0, distance / edgeZone));
+      const shift = metrics.duration * (0.7 + strength * 1.8) * elapsed;
+      const nextStart = nearLeft
+        ? Math.max(0, metrics.start - shift)
+        : Math.max(0, Math.min(duration - metrics.duration, metrics.end + shift - metrics.duration));
+      const nextEnd = nearLeft
+        ? Math.min(duration, nextStart + metrics.duration)
+        : Math.min(duration, metrics.end + shift);
+      const next = { start: nextStart, end: nextEnd };
+      activeMetrics = getViewportMetrics(next);
+      if (Math.abs(activeMetrics.start - metrics.start) > 0.0001 || Math.abs(activeMetrics.end - metrics.end) > 0.0001) {
+        localViewportRef.current = next;
+        setLocalViewport(next);
+      }
+      const ratio = Math.min(1, Math.max(0, pointerX / rect.width));
+      seconds = activeMetrics.start + ratio * activeMetrics.duration;
+    } else {
+      dragScrollTimeRef.current = now;
     }
-    moveHandle(active.handle, seconds);
+    if (active.mode === 'selection') {
+      const selectionDuration = active.selectionDuration ?? (end - start);
+      const selectionOffset = active.selectionOffset ?? selectionDuration / 2;
+      const maxStart = Math.max(0, duration - selectionDuration);
+      const nextStart = Math.min(maxStart, Math.max(0, snapClipTime(seconds - selectionOffset)));
+      const nextEnd = nextStart + selectionDuration;
+      setMagneticEdge(nextStart <= 0 ? 'start' : nextEnd >= duration ? 'end' : null);
+      onStartChange(nextStart);
+      onEndChange(nextEnd);
+    } else {
+      moveHandle(active.handle, seconds, rect, activeMetrics.duration);
+    }
   };
 
   const pointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (activePointer.current?.id !== event.pointerId) return;
     activePointer.current = null;
+    dragScrollTimeRef.current = null;
+    setActiveHandle(null);
+    setActiveInteraction(null);
+    setMagneticEdge(null);
     const next = viewportForSelection(start, end, duration);
     setLocalViewport(next);
     onViewportChange(next);
@@ -675,7 +756,7 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
   };
 
   return (
-    <div className={`clip-range-group ${disabled ? 'is-disabled' : ''}`}>
+    <div className={`clip-range-group ${disabled ? 'is-disabled' : ''} ${magneticEdge ? `is-magnetic-${magneticEdge}` : ''} ${activeInteraction === 'selection' ? 'is-selection-active' : ''}`}>
       <div className="clip-overview" aria-label="全片概览">
         <div className="clip-overview-track">
           <div className="clip-overview-viewport" style={{ left: `${overviewViewStartPercent}%`, width: `${overviewViewEndPercent - overviewViewStartPercent}%` }} />
@@ -690,12 +771,15 @@ function ClipRangeSelector({ duration, start, end, coverTime, frames, disabled, 
           <div className="clip-range-mask" style={{ left: `${endPercent}%`, width: `${100 - endPercent}%` }} />
           <div className="clip-range-selection" style={{ left: `${startPercent}%`, width: `${endPercent - startPercent}%` }} />
           {coverPercent !== null ? <div className="clip-range-playhead" style={{ left: `${coverPercent}%` }} aria-hidden="true" /> : null}
-          <div className="clip-range-handle" data-handle="start" style={{ left: `${startPercent}%` }} role="slider" tabIndex={disabled ? -1 : 0} aria-label="片段起点" aria-valuemin={0} aria-valuemax={Math.max(0, end - MIN_CLIP_SECONDS)} aria-valuenow={start} aria-valuetext={formatClipTime(start)} aria-disabled={disabled} onKeyDown={(event) => handleKey(event, 'start')} />
-          <div className="clip-range-handle" data-handle="end" style={{ left: `${endPercent}%` }} role="slider" tabIndex={disabled ? -1 : 0} aria-label="片段终点" aria-valuemin={Math.min(duration, start + MIN_CLIP_SECONDS)} aria-valuemax={duration} aria-valuenow={end} aria-valuetext={formatClipTime(end)} aria-disabled={disabled} onKeyDown={(event) => handleKey(event, 'end')} />
+          <div className={`clip-range-handle ${activeHandle === 'start' ? 'is-active' : ''} ${magneticEdge === 'start' ? 'is-magnetic' : ''}`} data-handle="start" style={{ left: `${startPercent}%` }} role="slider" tabIndex={disabled ? -1 : 0} aria-orientation="horizontal" aria-label="片段起点" aria-valuemin={0} aria-valuemax={Math.max(0, end - MIN_CLIP_SECONDS)} aria-valuenow={start} aria-valuetext={formatClipTime(start)} aria-disabled={disabled} onKeyDown={(event) => handleKey(event, 'start')}>
+            {activeHandle === 'start' ? <span className="clip-handle-time" aria-hidden="true">{formatClipTime(start)}</span> : null}
+          </div>
+          <div className={`clip-range-handle ${activeHandle === 'end' ? 'is-active' : ''} ${magneticEdge === 'end' ? 'is-magnetic' : ''}`} data-handle="end" style={{ left: `${endPercent}%` }} role="slider" tabIndex={disabled ? -1 : 0} aria-orientation="horizontal" aria-label="片段终点" aria-valuemin={Math.min(duration, start + MIN_CLIP_SECONDS)} aria-valuemax={duration} aria-valuenow={end} aria-valuetext={formatClipTime(end)} aria-disabled={disabled} onKeyDown={(event) => handleKey(event, 'end')}>
+            {activeHandle === 'end' ? <span className="clip-handle-time" aria-hidden="true">{formatClipTime(end)}</span> : null}
+          </div>
         </div>
       </div>
       <div className="clip-range-times"><span>起点 <strong>{formatClipTime(start)}</strong></span><span>片段 <strong>{formatClipTime(end - start)}</strong></span><span>终点 <strong>{formatClipTime(end)}</strong></span></div>
-      <small>上下两层分别是全片概览和当前编辑范围；拖动边缘可恢复被裁掉的前后内容{coverTime !== null ? '，白线表示封面画面' : ''}。</small>
     </div>
   );
 }
