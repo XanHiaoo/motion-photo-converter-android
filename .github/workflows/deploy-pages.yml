@@ -41,6 +41,12 @@ jobs:
         working-directory: web
         run: npm run build
 
+      - name: Include mobile user guide
+        run: |
+          mkdir -p web/dist/docs/images
+          cp docs/USER_GUIDE.html web/dist/docs/USER_GUIDE.html
+          cp docs/images/*.png web/dist/docs/images/
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:

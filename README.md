@@ -12,9 +12,7 @@
 - 调整片段起止点、横向移动选区，并使用快速或精确裁剪。
 - 默认在视频结束时渐变回封面，渐变时长初始为 0.5 秒，可按需调整或关闭。
 
-## 当前界面
-
-以下配图统一采用标准手机视口尺寸；编辑页展示关键操作区域。
+## 界面预览
 
 <div align="center">
   <img src="docs/images/home-preview.png" alt="Motion Photo Tool 首页与三种创建方式" width="220" />
@@ -23,8 +21,6 @@
   <img src="docs/images/batch-preview.png" alt="批量导入动态照片及转换队列" width="220" />
   <img src="docs/images/manual-preview.png" alt="照片和视频合成模式的选段控件" width="220" />
 </div>
-
-操作步骤、裁剪说明和常见问题见[用户使用指南](docs/USER_GUIDE.md)或[PDF 用户手册](docs/motion-photo-tool-user-guide.pdf)。
 
 ## 技术栈
 
@@ -81,7 +77,7 @@ Release 签名、GitHub Secrets 和 Tag 发布流程见[发布指南](docs/RELEA
 
 ## 文档
 
-- [用户使用指南](docs/USER_GUIDE.md)
+- [用户使用指南（HTML）](https://xanhiaoo.github.io/samsung-motion-photo-tool/docs/USER_GUIDE.html)
 - [用户使用手册 PDF](docs/motion-photo-tool-user-guide.pdf)
 - [开发指南](docs/DEVELOPMENT.md)
 - [发布指南](docs/RELEASE.md)

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Motion Photo Tool 手机优先使用指南：从视频制作、批量转换动态照片，以及照片和视频合成。" />
+    <meta name="theme-color" content="#f4f6f8" />
+    <title>Motion Photo Tool 使用指南</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #172b49;
+        --blue: #2869e8;
+        --blue-soft: #edf4ff;
+        --muted: #71819a;
+        --line: #e2e8f0;
+        --surface: #fff;
+        --canvas: #f4f6f8;
+        --green: #4e9278;
+        --purple: #8968b3;
+        font-family: Inter, "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+      body { margin: 0; color: var(--ink); background: var(--canvas); font-size: 16px; line-height: 1.7; }
+      a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+      button { font: inherit; }
+      .shell { width: min(100%, 960px); margin: 0 auto; padding: 16px 14px 36px; }
+      .print-page { margin: 0 0 16px; padding: 26px 22px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 10px 32px rgb(23 43 73 / 4%); }
+      .toolbar, .brand-row, .toolbar-actions, .section-title, .page-footer, .privacy-note, .mode-card, .step { display: flex; }
+      .toolbar { align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 26px; }
+      .brand-row { align-items: center; min-width: 0; gap: 11px; color: var(--muted); font-size: 14px; font-weight: 650; letter-spacing: .01em; }
+      .brand-mark { display: grid; width: 38px; height: 38px; flex: 0 0 auto; place-items: center; color: var(--blue); background: var(--blue-soft); border: 1px solid #d7e5ff; border-radius: 12px; font-size: 17px; font-weight: 800; }
+      .toolbar-actions { flex: 0 0 auto; align-items: center; gap: 10px; }
+      .print-button { min-height: 44px; padding: 9px 15px; color: #fff; background: var(--blue); border: 0; border-radius: 13px; box-shadow: 0 4px 12px rgb(40 105 232 / 18%); cursor: pointer; font-size: 14px; font-weight: 700; white-space: nowrap; }
+      .print-button:hover { background: #1d5fd8; }
+      .eyebrow, .section-kicker { color: var(--blue); font-size: 12px; font-weight: 750; letter-spacing: .09em; text-transform: uppercase; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { max-width: 700px; margin-bottom: 12px; font-size: clamp(30px, 7vw, 48px); font-weight: 780; letter-spacing: -.045em; line-height: 1.16; }
+      h1 span { color: var(--blue); }
+      h2 { margin-bottom: 9px; font-size: clamp(23px, 5vw, 30px); font-weight: 760; letter-spacing: -.025em; line-height: 1.3; }
+      h3 { margin-bottom: 5px; font-size: 16px; font-weight: 720; line-height: 1.45; }
+      .lede, .section-lede { max-width: 700px; margin-bottom: 0; color: var(--muted); font-size: 16px; }
+      .lede { font-size: 17px; }
+      .privacy-note { align-items: flex-start; gap: 11px; margin: 22px 0; padding: 14px 16px; color: #476e61; background: #f0f7f3; border: 1px solid #dcece3; border-radius: 16px; }
+      .privacy-icon { flex: 0 0 auto; font-size: 18px; line-height: 1.5; }
+      .privacy-note p { margin: 0; }
+      .toc-wrap { margin-top: 25px; }
+      .toc-label { display: block; margin-bottom: 8px; color: var(--muted); font-size: 13px; font-weight: 650; }
+      .toc { display: flex; gap: 8px; overflow-x: auto; padding: 2px 1px 7px; scrollbar-width: thin; }
+      .toc a { flex: 0 0 auto; min-height: 40px; padding: 8px 12px; color: #4f6079; background: #f7f9fc; border: 1px solid var(--line); border-radius: 999px; font-size: 13px; line-height: 22px; text-decoration: none; }
+      .toc a:hover, .toc a:focus-visible { color: var(--blue); background: var(--blue-soft); border-color: #cfe0ff; }
+      .section-title { align-items: flex-start; gap: 13px; margin-bottom: 20px; }
+      .section-number { display: grid; width: 39px; height: 39px; flex: 0 0 auto; place-items: center; color: var(--blue); background: var(--blue-soft); border-radius: 13px; font-size: 13px; font-weight: 800; }
+      .section-title h2 { margin: 0 0 4px; }
+      .section-title p { margin: 0; color: var(--muted); font-size: 14px; }
+      .mode-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 20px 0; }
+      .mode-card { align-items: flex-start; gap: 12px; padding: 14px; background: #f8fafc; border: 1px solid var(--line); border-radius: 16px; }
+      .mode-icon { display: grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; color: var(--blue); background: var(--blue-soft); border-radius: 11px; font-size: 14px; font-weight: 800; }
+      .mode-card:nth-child(2) .mode-icon { color: var(--green); background: #edf6f1; }
+      .mode-card:nth-child(3) .mode-icon { color: var(--purple); background: #f3eff8; }
+      .mode-card p, .step p, .status-card p, .tip p { margin: 0; color: var(--muted); font-size: 14px; }
+      .steps { display: grid; gap: 12px; margin: 20px 0; padding: 0; list-style: none; counter-reset: guide-step; }
+      .step { align-items: flex-start; gap: 12px; counter-increment: guide-step; }
+      .step::before { display: grid; width: 27px; height: 27px; flex: 0 0 auto; place-items: center; color: var(--blue); background: var(--blue-soft); border-radius: 9px; content: counter(guide-step); font-size: 12px; font-weight: 800; }
+      .step strong, .status-card strong { color: var(--ink); }
+      .article-layout { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+      .tip { margin: 16px 0 0; padding: 13px 15px; color: var(--muted); background: #f7f9fc; border-left: 3px solid #a9c7ff; border-radius: 0 12px 12px 0; }
+      .status-list, .faq-list { display: grid; gap: 9px; margin: 16px 0; }
+      .status-card, .faq-item { display: block; padding: 13px 15px; background: #f8fafc; border: 1px solid var(--line); border-radius: 14px; }
+      .status-card p, .faq-item dd { margin: 4px 0 0; }
+      .choice-list { display: grid; gap: 9px; margin: 16px 0 20px; }
+      .choice { display: flex; justify-content: space-between; gap: 14px; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--line); border-radius: 13px; }
+      .choice span:first-child { color: var(--muted); }
+      .choice strong { text-align: right; }
+      .faq-item dt { font-weight: 720; }
+      .faq-item dd { color: var(--muted); font-size: 14px; }
+      .screenshot { overflow: hidden; background: #f7f9fc; border: 1px solid var(--line); border-radius: 17px; }
+      .screenshot summary { min-height: 48px; padding: 12px 14px; color: var(--blue); cursor: pointer; font-size: 14px; font-weight: 700; list-style: none; }
+      .screenshot summary::-webkit-details-marker { display: none; }
+      .screenshot summary::after { float: right; content: "+"; font-size: 18px; line-height: 1.2; }
+      .screenshot[open] summary::after { content: "-"; }
+      .screenshot figure { margin: 0; padding: 0 12px 12px; text-align: center; }
+      .screenshot img { display: block; width: min(100%, 340px); height: auto; margin: 0 auto; background: var(--canvas); border: 1px solid var(--line); border-radius: 13px; }
+      .screenshot figcaption { margin-top: 7px; color: var(--muted); font-size: 12px; }
+      .page-footer { align-items: center; justify-content: space-between; gap: 12px; margin-top: 26px; padding-top: 13px; color: #8794a7; border-top: 1px solid var(--line); font-size: 12px; }
+      .print-page-number { display: none; }
+
+      @media (min-width: 700px) {
+        .shell { padding: 28px 24px 50px; }
+        .print-page { padding: 42px 48px; }
+        .mode-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .article-layout { grid-template-columns: minmax(0, 1fr) 230px; gap: 28px; }
+      }
+
+      @media print {
+        @page { size: A4 portrait; margin: 12mm 13mm 13mm; }
+        :root { color-scheme: light; }
+        html, body { width: auto; margin: 0; background: #fff; font-size: 9pt; line-height: 1.45; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        .shell { width: auto; max-width: none; margin: 0; padding: 0; }
+        .toolbar, .toc-wrap, .screen-only { display: none !important; }
+        .print-page { display: flex; min-height: 272mm; flex-direction: column; margin: 0; padding: 0; overflow: visible; background: #fff; border: 0; border-radius: 0; box-shadow: none; break-after: page; page-break-after: always; }
+        .print-page:last-child { break-after: auto; page-break-after: auto; }
+        .print-page-number { display: inline; }
+        h1 { margin-bottom: 6px; font-size: 27pt; }
+        h2 { margin-bottom: 5px; font-size: 19pt; }
+        h3 { margin-bottom: 2px; font-size: 10pt; }
+        p { margin-bottom: 5px; }
+        .eyebrow, .section-kicker { font-size: 7.5pt; }
+        .lede, .section-lede { font-size: 10pt; }
+        .privacy-note { gap: 8px; margin: 12px 0; padding: 9px 11px; border-radius: 10px; }
+        .section-title { gap: 10px; margin-bottom: 12px; }
+        .section-number { width: 30px; height: 30px; border-radius: 9px; font-size: 10pt; }
+        .section-title p, .mode-card p, .step p, .status-card p, .tip, .faq-item dd { font-size: 8.5pt; }
+        .mode-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 12px 0; }
+        .mode-card { gap: 8px; padding: 9px; border-radius: 10px; }
+        .mode-icon { width: 27px; height: 27px; border-radius: 8px; font-size: 8pt; }
+        .steps { gap: 7px; margin: 12px 0; }
+        .step { gap: 8px; break-inside: avoid; page-break-inside: avoid; }
+        .step::before { width: 21px; height: 21px; border-radius: 6px; font-size: 8pt; }
+        .article-layout { grid-template-columns: minmax(0, 1fr) 43mm; gap: 7mm; }
+        .tip { margin-top: 9px; padding: 8px 10px; }
+        .status-list, .faq-list { gap: 6px; margin: 10px 0; }
+        .status-card, .faq-item { padding: 8px 10px; border-radius: 9px; break-inside: avoid; page-break-inside: avoid; }
+        .choice-list { gap: 6px; margin: 10px 0 13px; }
+        .choice { padding: 7px 10px; border-radius: 8px; break-inside: avoid; }
+        .screenshot { display: block; overflow: visible; background: #f7f9fc; border-radius: 10px; break-inside: avoid; page-break-inside: avoid; }
+        .screenshot summary { min-height: 0; padding: 7px 8px; font-size: 8pt; }
+        .screenshot summary::after { display: none; }
+        .screenshot:not([open]) > :not(summary) { display: block !important; }
+        .screenshot figure { padding: 0 7px 7px; }
+        .screenshot img { width: 100%; max-height: 78mm; object-fit: contain; border-radius: 6px; }
+        .screenshot figcaption { margin-top: 4px; font-size: 7pt; }
+        .page-footer { margin-top: auto; padding-top: 7px; font-size: 7.5pt; break-inside: avoid; }
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="print-page" id="overview" aria-labelledby="guide-title">
+        <div class="toolbar">
+          <div class="brand-row"><span class="brand-mark" aria-hidden="true">M</span><span>Motion Photo Tool <span aria-hidden="true">·</span> 用户手册</span></div>
+          <div class="toolbar-actions"><button class="print-button" id="print-guide" type="button">导出 PDF</button></div>
+        </div>
+        <p class="eyebrow">手机优先的操作指南</p>
+        <h1 id="guide-title">制作与管理 <span>Motion Photo</span></h1>
+        <p class="lede">从视频制作、批量转换已有动态照片，或用独立照片与视频合成。按你的素材选择方式，跟着步骤即可完成。</p>
+        <aside class="privacy-note"><span class="privacy-icon" aria-hidden="true">▣</span><p><strong>文件仅在本机处理，不会上传。</strong>原始文件不会被覆盖。</p></aside>
+        <p class="section-kicker">选择创建方式</p>
+        <div class="mode-grid" aria-label="三种创建方式">
+          <article class="mode-card"><span class="mode-icon" aria-hidden="true">01</span><div><h3>视频生成动态图</h3><p>截取视频片段，选择一帧作为封面。</p></div></article>
+          <article class="mode-card"><span class="mode-icon" aria-hidden="true">02</span><div><h3>批量转换</h3><p>导入多张内嵌视频的动态照片并转换。</p></div></article>
+          <article class="mode-card"><span class="mode-icon" aria-hidden="true">03</span><div><h3>照片 + 视频</h3><p>指定照片封面，再合成视频片段。</p></div></article>
+        </div>
+        <div class="article-layout">
+          <div>
+            <h3>打开应用</h3>
+            <ul class="steps">
+              <li class="step"><div><strong>Web 版：</strong><a href="https://xanhiaoo.github.io/samsung-motion-photo-tool/">打开在线应用</a>。建议使用较新的 Samsung Internet 或 Android Chrome。页面异常时先刷新；仍未恢复再清除站点缓存。</div></li>
+              <li class="step"><div><strong>Android 版：</strong>安装并打开 APK。选择文件时会调用 Android 系统文件选择器；成品保存到相册的 <code>Pictures/Motion Photo Tool</code>。</div></li>
+            </ul>
+            <p class="tip"><strong>渐变默认值：</strong>结束时渐变回封面默认开启，时长为 0.5 秒。可在对应模式中调整或关闭。</p>
+          </div>
+          <details class="screenshot"><summary>查看首页界面</summary><figure><img src="images/home-preview.png" alt="Motion Photo Tool 首页，展示三种创建方式" /><figcaption>首页与三种创建方式</figcaption></figure></details>
+        </div>
+        <nav class="toc-wrap" aria-label="手册目录"><span class="toc-label">快速跳转</span><div class="toc"><a href="#video">视频生成</a><a href="#batch">批量转换</a><a href="#combine">照片 + 视频</a><a href="#help">选择方式与常见问题</a></div></nav>
+        <footer class="page-footer"><span>Motion Photo Tool <span aria-hidden="true">·</span> 用户手册</span><span class="print-page-number">01 / 05</span></footer>
+      </section>
+
+      <section class="print-page" id="video" aria-labelledby="video-title">
+        <header class="section-title"><span class="section-number" aria-hidden="true">01</span><div><h2 id="video-title">从视频生成动态图</h2><p>截取一段视频，并从片段中挑选一帧作为封面。</p></div></header>
+        <div class="article-layout">
+          <div>
+            <p class="section-kicker">操作步骤</p>
+            <ol class="steps">
+              <li class="step"><div><strong>选择视频：</strong>在首页点 <strong>视频生成动态图</strong>，选择 MP4 或 MOV。</div></li>
+              <li class="step"><div><strong>设置片段：</strong>拖动时间轴两侧手柄调整起止点；按住选区内部可整体左右移动片段。靠近素材边缘拖动时，时间轴会跟随扩展。</div></li>
+              <li class="step"><div><strong>选择封面：</strong>拖动 <strong>拖动选择封面</strong> 滑块，在已选片段内定位封面帧。</div></li>
+              <li class="step"><div><strong>预览和渐变：</strong>点 <strong>预览片段</strong> 检查选段。<strong>结束时渐变回封面</strong>默认开启，时长为 0.5 秒；可调整或关闭。</div></li>
+              <li class="step"><div><strong>选择裁剪方式：</strong>快速裁剪直接复制原视频，通常更快但起点可能略有偏差；精确裁剪重新编码 H.264，边界更准但处理更慢。</div></li>
+              <li class="step"><div><strong>生成并保存：</strong>点 <strong>生成 Motion Photo</strong>，完成后点 <strong>保存 Motion Photo</strong>。Android 写入相册，Web 下载文件。</div></li>
+            </ol>
+            <p class="tip">不调整选段时默认使用完整视频。封面保存为 JPEG。启用结尾渐变时优先处理视频结尾的短过渡；Android 设备会尝试硬件加速，不兼容时可能回退到软件处理。</p>
+          </div>
+          <details class="screenshot"><summary>查看视频模式界面</summary><figure><img src="images/video-preview.png" alt="视频模式的时间轴、封面滑块、渐变与裁剪控制" /><figcaption>选段、封面与渐变控制</figcaption></figure></details>
+        </div>
+        <footer class="page-footer"><span>视频模式 <span aria-hidden="true">·</span> 从片段到成品</span><span class="print-page-number">02 / 05</span></footer>
+      </section>
+
+      <section class="print-page" id="batch" aria-labelledby="batch-title">
+        <header class="section-title"><span class="section-number" aria-hidden="true">02</span><div><h2 id="batch-title">批量转换动态照片</h2><p>一次导入多张已有动态照片，逐项识别、转换或直接保存。</p></div></header>
+        <div class="article-layout">
+          <div>
+            <p class="section-kicker">导入与处理</p>
+            <ol class="steps">
+              <li class="step"><div><strong>打开批量模式：</strong>在首页点 <strong>批量转换</strong>。</div></li>
+              <li class="step"><div><strong>选择动态照片：</strong>点 <strong>选择动态图文件</strong>，在系统选择器中多选 JPG / JPEG / HEIC。稍后可点 <strong>继续添加文件</strong> 补充队列。</div></li>
+              <li class="step"><div><strong>等待分析：</strong>每个文件需包含静态图片和内嵌 MP4 / MOV。普通静态图或缺少内嵌视频的文件无法按此方式转换，请改用 <strong>照片 + 视频</strong>。</div></li>
+            </ol>
+            <h3>识别状态</h3>
+            <div class="status-list">
+              <article class="status-card"><strong>已是 Samsung Motion Photo</strong><p>已符合目标格式，可直接点该行下载按钮保存。</p></article>
+              <article class="status-card"><strong>已识别图片和视频</strong><p>点该行的 <strong>转换</strong>，或点页面底部的 <strong>全部转换</strong> 顺序处理。</p></article>
+              <article class="status-card"><strong>无法解析或转换失败</strong><p>检查文件内容与格式；失败项会显示原因。普通静态图应改用照片 + 视频模式。</p></article>
+            </div>
+            <p class="tip"><strong>批量渐变：</strong>默认启用结束时渐变回封面，时长初始为 0.5 秒。设置会应用于随后转换的文件；处理期间请保持页面打开。</p>
+          </div>
+          <details class="screenshot"><summary>查看批量模式界面</summary><figure><img src="images/batch-preview.png" alt="批量导入动态照片及转换队列" /><figcaption>批量导入与队列状态</figcaption></figure></details>
+        </div>
+        <footer class="page-footer"><span>批量模式 <span aria-hidden="true">·</span> 分析与转换队列</span><span class="print-page-number">03 / 05</span></footer>
+      </section>
+
+      <section class="print-page" id="combine" aria-labelledby="combine-title">
+        <header class="section-title"><span class="section-number" aria-hidden="true">03</span><div><h2 id="combine-title">照片 + 视频合成</h2><p>用一张照片作为封面，再把视频片段合成为动态照片。</p></div></header>
+        <div class="article-layout">
+          <div>
+            <p class="section-kicker">操作步骤</p>
+            <ol class="steps">
+              <li class="step"><div><strong>打开合成模式：</strong>在首页点 <strong>照片 + 视频</strong>。</div></li>
+              <li class="step"><div><strong>选择封面照片：</strong>点 <strong>选择照片</strong>，导入 JPG / JPEG / HEIC / PNG。所选照片会作为封面。</div></li>
+              <li class="step"><div><strong>选择视频：</strong>点 <strong>选择视频</strong>，导入 MP4 / MOV。</div></li>
+              <li class="step"><div><strong>按需适配尺寸：</strong>启用 <strong>图片自适应视频尺寸</strong>，可按视频宽高调整照片。</div></li>
+              <li class="step"><div><strong>设置视频片段：</strong>在时间轴调整起止位置；拖动选区中间可整体横移，并点 <strong>预览片段</strong> 检查效果。</div></li>
+              <li class="step"><div><strong>调整渐变和裁剪：</strong>结束时渐变回封面默认开启，时长为 0.5 秒。按需调整、关闭，或选择快速 / 精确裁剪。</div></li>
+              <li class="step"><div><strong>生成并保存：</strong>点 <strong>生成 Motion Photo</strong>，完成后保存结果。</div></li>
+            </ol>
+            <p class="tip">未裁剪时使用完整视频。此模式没有单独的视频封面滑块，因为所选照片始终作为封面。</p>
+          </div>
+          <details class="screenshot"><summary>查看照片 + 视频界面</summary><figure><img src="images/manual-preview.png" alt="照片与视频合成模式的选段、渐变和裁剪控制" /><figcaption>照片封面与视频片段控制</figcaption></figure></details>
+        </div>
+        <footer class="page-footer"><span>照片 + 视频 <span aria-hidden="true">·</span> 手动指定封面</span><span class="print-page-number">04 / 05</span></footer>
+      </section>
+
+      <section class="print-page" id="help" aria-labelledby="help-title">
+        <header class="section-title"><span class="section-number" aria-hidden="true">04</span><div><h2 id="help-title">选择方式与常见问题</h2><p>按现有素材选择入口；遇到预览、处理或保存问题时可先查看这里。</p></div></header>
+        <p class="section-kicker">按素材选择</p>
+        <div class="choice-list">
+          <div class="choice"><span>一段 MP4 / MOV，要从视频取封面</span><strong>视频生成动态图</strong></div>
+          <div class="choice"><span>多个已内嵌视频的动态照片文件</span><strong>批量转换</strong></div>
+          <div class="choice"><span>一张独立照片和一段视频</span><strong>照片 + 视频</strong></div>
+        </div>
+        <div class="privacy-note"><span class="privacy-icon" aria-hidden="true">▣</span><p><strong>隐私与兼容性：</strong>文件在本机读取和处理，不会上传；原始文件不会被覆盖。Android 输出到 <code>Pictures/Motion Photo Tool</code>，Web 版通过浏览器下载。Android 最低支持 Android 10；较新的 System WebView 有助于视频处理。</p></div>
+        <p class="section-kicker">遇到问题时</p>
+        <dl class="faq-list">
+          <div class="faq-item"><dt>批量文件无法识别</dt><dd>确认原文件同时包含图片和内嵌 MP4 / MOV。普通静态照片请改用照片 + 视频模式。</dd></div>
+          <div class="faq-item"><dt>照片或视频无法预览</dt><dd>优先尝试 JPEG 和 H.264 MP4。MOV 需要先转换，可能花费更长时间。</dd></div>
+          <div class="faq-item"><dt>快速裁剪边界不准</dt><dd>改用精确裁剪。重新编码会更慢，长视频请耐心等待。</dd></div>
+          <div class="faq-item"><dt>处理似乎停住</dt><dd>保持应用或标签页打开。大文件或 MOV 处理时间较长。</dd></div>
+          <div class="faq-item"><dt>相册中找不到结果</dt><dd>检查 <code>Pictures/Motion Photo Tool</code>，或在文件管理器搜索最近生成的 <code>_MP.jpg</code>。</dd></div>
+          <div class="faq-item"><dt>生成后不能播放</dt><dd>不同机型和图库对编码的支持不同。改用 H.264 MP4、缩短片段后重新生成。</dd></div>
+        </dl>
+        <footer class="page-footer"><span>Motion Photo Tool <span aria-hidden="true">·</span> 文件在本机处理</span><span class="print-page-number">05 / 05</span></footer>
+      </section>
+    </main>
+    <script>
+      const screenshotDetails = [...document.querySelectorAll('.screenshot')];
+      let screenshotOpenState = [];
+
+      window.addEventListener('beforeprint', () => {
+        screenshotOpenState = screenshotDetails.map((details) => details.open);
+        screenshotDetails.forEach((details) => { details.open = true; });
+      });
+
+      window.addEventListener('afterprint', () => {
+        screenshotDetails.forEach((details, index) => {
+          details.open = screenshotOpenState[index] ?? false;
+        });
+      });
+
+      document.getElementById('print-guide').addEventListener('click', () => window.print());
+    </script>
+  </body>
+</html>
