@@ -1,26 +1,30 @@
 # Motion Photo Tool
 
-一个面向三星 Motion Photo 的本地转换工具，提供 Web 预览版和 Android WebView 封装版。
+一个面向三星 Motion Photo 的本地制作与转换工具，提供 Web 版和 Android 应用。视频、照片与动态照片都在当前设备上处理，不会上传到服务器。
 
-项目使用 React + Vite 实现界面和媒体处理逻辑，Android 端通过 WebView 离线加载 Web 资源。所有媒体处理均在本机完成，不上传用户文件。
+[在线使用](https://xanhiaoo.github.io/samsung-motion-photo-tool/) · [GitHub Actions](https://github.com/XanHiaoo/samsung-motion-photo-tool/actions)
 
-[在线预览](https://xanhiaoo.github.io/samsung-motion-photo-tool/) · [GitHub Actions](https://github.com/XanHiaoo/samsung-motion-photo-tool/actions)
+## 可以做什么
 
-## 功能
+- 从 MP4 / MOV 视频截取片段、选择封面，生成 Samsung Motion Photo。
+- 批量导入内嵌视频的 JPG / JPEG / HEIC 动态照片，识别、转换并保存。
+- 选择一张照片和一段视频，合成为一张 Motion Photo。
+- 调整片段起止点、横向移动选区，并使用快速或精确裁剪。
+- 默认在视频结束时渐变回封面，渐变时长初始为 0.5 秒，可按需调整或关闭。
 
-- 从视频生成 Samsung Motion Photo，并选择封面帧。
-- 批量导入和转换动态图片。
-- 合成照片与视频，并支持图片自适应视频尺寸。
-- 支持 JPEG、HEIC、MOV 等常见输入。
-- 在本机完成媒体处理，并将 Android 生成结果保存到相册。
+## 当前界面
 
-## 界面预览
+以下配图统一采用标准手机视口尺寸；编辑页展示关键操作区域。
 
 <div align="center">
-  <img src="docs/images/home-preview.png" alt="Motion Photo Tool 首页" width="240" />
-  <img src="docs/images/video-preview.png" alt="视频生成 Motion Photo 页面" width="240" />
-  <p><sub>首页与视频生成界面</sub></p>
+  <img src="docs/images/home-preview.png" alt="Motion Photo Tool 首页与三种创建方式" width="220" />
+  <img src="docs/images/video-preview.png" alt="视频模式的时间轴、封面与渐变控制" width="220" />
+  <br />
+  <img src="docs/images/batch-preview.png" alt="批量导入动态照片及转换队列" width="220" />
+  <img src="docs/images/manual-preview.png" alt="照片和视频合成模式的选段控件" width="220" />
 </div>
+
+操作步骤、裁剪说明和常见问题见[用户使用指南](docs/USER_GUIDE.md)或[PDF 用户手册](docs/motion-photo-tool-user-guide.pdf)。
 
 ## 技术栈
 
@@ -49,19 +53,17 @@ npm ci
 npm run dev -- --host 127.0.0.1 --strictPort
 ```
 
-访问 <http://127.0.0.1:5173/samsung-motion-photo-tool/>。
-
-也可以在 VS Code 中使用 Run and Debug，或执行 `Tasks: Run Task` → `web:dev`。
+访问 <http://127.0.0.1:5173/samsung-motion-photo-tool/>。也可在 VS Code 中运行 `web:dev` 任务。
 
 ### Android APK
 
-Android 构建前需要先生成 Web 资源：
+Android 构建前先生成 Web 资源：
 
 ```text
 npm run build:android
 ```
 
-Debug 和 Release 的完整构建方式、VS Code 任务及环境配置见：[开发指南](docs/DEVELOPMENT.md)。
+Debug 和 Release 的完整构建方式、VS Code 任务及环境配置见[开发指南](docs/DEVELOPMENT.md)。
 
 ## 构建类型
 
@@ -73,19 +75,9 @@ Debug 和 Release 的完整构建方式、VS Code 任务及环境配置见：[�
 | Android Release | 正式分发 | `app/build/outputs/apk/release/app-release.apk` |
 | GitHub Release | Tag 自动发布 | 推送 `v*.*.*` tag |
 
-Release 签名、GitHub Secrets 和 Tag 发布流程见：[发布指南](docs/RELEASE.md)。
+Release 签名、GitHub Secrets 和 Tag 发布流程见[发布指南](docs/RELEASE.md)。
 
-## 目录
-
-```text
-app/                  Android WebView 壳和打包后的 Web 资源
-web/                  Web 源码、媒体处理逻辑和测试
-docs/                 用户指南、开发指南和发布指南
-.github/workflows/    Pages 部署和 APK 发布工作流
-.vscode/              VS Code 任务与调试配置
-```
-
-修改 Web 源码后不要直接编辑 `app/src/main/assets/`，应重新执行 `npm run build:android` 生成资源。
+修改 Web 源码后不要直接编辑 `app/src/main/assets/`；运行 `npm run build:android` 重新生成资源。
 
 ## 文档
 
