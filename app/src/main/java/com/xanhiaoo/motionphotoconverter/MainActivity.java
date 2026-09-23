@@ -22,6 +22,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.webkit.WebViewAssetLoader;
@@ -62,14 +63,26 @@ public final class MainActivity extends Activity {
 
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(247, 250, 255));
+
+        FrameLayout content = new FrameLayout(this);
+        content.setBackgroundColor(Color.rgb(247, 250, 255));
         if (Build.VERSION.SDK_INT >= 35) {
-            webView.setOnApplyWindowInsetsListener((view, insets) -> {
-                Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+            content.setOnApplyWindowInsetsListener((view, insets) -> {
+                int handledTypes = WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout();
+                Insets bars = insets.getInsets(handledTypes);
                 view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-                return insets;
+                return new WindowInsets.Builder(insets)
+                        .setInsets(handledTypes, Insets.NONE)
+                        .build();
             });
         }
-        setContentView(webView);
+        content.addView(webView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        setContentView(content);
+        if (Build.VERSION.SDK_INT >= 35) {
+            content.post(content::requestApplyInsets);
+        }
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
