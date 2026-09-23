@@ -1,7 +1,8 @@
-package com.xanhiaoo.motionphotoconverter;
+package com.xanhiaoo.motionphototool;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Color;
@@ -10,6 +11,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.view.View;
@@ -124,6 +126,10 @@ public final class MainActivity extends Activity {
                 try {
                     Intent intent = params.createIntent();
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                    }
                     startActivityForResult(intent, FILE_REQUEST);
                 } catch (ActivityNotFoundException error) {
                     fileCallback = null;
@@ -141,9 +147,26 @@ public final class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_REQUEST && fileCallback != null) {
-            fileCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+            Uri[] result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+            if (result == null && resultCode == RESULT_OK && data != null) result = extractSelectedUris(data);
+            fileCallback.onReceiveValue(result);
             fileCallback = null;
         }
+    }
+
+    private static Uri[] extractSelectedUris(Intent data) {
+        ClipData clipData = data.getClipData();
+        if (clipData != null && clipData.getItemCount() > 0) {
+            Uri[] uris = new Uri[clipData.getItemCount()];
+            for (int index = 0; index < clipData.getItemCount(); index++) {
+                uris[index] = clipData.getItemAt(index).getUri();
+            }
+            return uris;
+        }
+        Uri uri = data.getData();
+        if (uri != null) return new Uri[] { uri };
+        Parcelable stream = data.getParcelableExtra(Intent.EXTRA_STREAM);
+        return stream instanceof Uri ? new Uri[] { (Uri) stream } : null;
     }
 
     @Override
@@ -220,7 +243,7 @@ public final class MainActivity extends Activity {
             values.put(MediaStore.Images.Media.DISPLAY_NAME, safeName);
             values.put(MediaStore.Images.Media.MIME_TYPE, mime);
             values.put(MediaStore.Images.Media.RELATIVE_PATH,
-                    Environment.DIRECTORY_PICTURES + "/Motion Photo Converter");
+                    Environment.DIRECTORY_PICTURES + "/Motion Photo Tool");
             values.put(MediaStore.Images.Media.IS_PENDING, 1);
             Uri uri = null;
             try {
@@ -260,7 +283,7 @@ public final class MainActivity extends Activity {
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Images.Media.IS_PENDING, 0);
                 getContentResolver().update(session.uri, values, null, null);
-                showMessage("已保存到相册 · Pictures/Motion Photo Converter");
+                showMessage("已保存到相册 · Pictures/Motion Photo Tool");
                 return true;
             } catch (Exception error) {
                 getContentResolver().delete(session.uri, null, null);

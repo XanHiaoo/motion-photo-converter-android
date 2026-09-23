@@ -1,4 +1,4 @@
-package com.xanhiaoo.motionphotoconverter;
+package com.xanhiaoo.motionphototool;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

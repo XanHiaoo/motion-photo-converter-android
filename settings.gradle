@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'MotionPhotoConverter'
+rootProject.name = 'MotionPhotoTool'
 include ':app'
 
