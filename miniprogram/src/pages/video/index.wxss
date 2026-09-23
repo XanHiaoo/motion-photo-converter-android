@@ -76,6 +76,8 @@
   line-height: 1.4;
 }
 
+.upload-zone-hover { border-color: #2869e8; background: #fbfdff; }
+
 .upload-icon {
   width: 69rpx;
   height: 73rpx;
@@ -87,6 +89,106 @@
 
 .upload-title { color: #182b45; font-size: 27rpx; font-weight: 700; }
 .upload-caption { margin-top: 11rpx; color: #6b7688; font-size: 20rpx; }
+
+.upload-zone.is-compact {
+  min-height: 204rpx;
+  padding: 30rpx;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: center;
+  justify-items: start;
+  column-gap: 24rpx;
+}
+
+.upload-zone.is-compact .upload-icon {
+  width: 88rpx;
+  height: 88rpx;
+  margin: 0;
+  grid-row: 1 / 3;
+  border-radius: 27rpx;
+  color: #fff;
+  background: linear-gradient(135deg, #4e7fcf, #6a95db);
+}
+
+.upload-zone.is-compact .upload-title { align-self: end; font-size: 25rpx; }
+.upload-zone.is-compact .upload-caption { min-width: 0; max-width: 100%; margin-top: 8rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.frame-card,
+.jpeg-result-card {
+  margin-top: 34rpx;
+  padding: 29rpx;
+  border: 2rpx solid #e4e9f1;
+  border-radius: 37rpx;
+  background: #fff;
+  box-shadow: 0 15rpx 40rpx rgba(64, 103, 164, 0.06);
+}
+
+.frame-heading { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.frame-heading-title { color: #182b45; font-size: 24rpx; font-weight: 700; }
+.frame-heading-time { color: #2869e8; font-size: 22rpx; font-variant-numeric: tabular-nums; font-weight: 750; }
+
+.frame-preview-stage {
+  width: 100%;
+  height: 344rpx;
+  margin-top: 24rpx;
+  position: relative;
+  overflow: hidden;
+  border-radius: 30rpx;
+  background: #09101b;
+}
+
+.frame-preview { width: 100%; height: 100%; display: block; background: #09101b; }
+
+.frame-cover-preview {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  background: #09101b;
+  pointer-events: none;
+}
+
+.frame-slider-summary { margin-top: 27rpx; display: flex; align-items: center; justify-content: space-between; gap: 20rpx; color: #182b45; font-size: 22rpx; font-weight: 700; }
+.frame-slider-current { color: #2869e8; font-variant-numeric: tabular-nums; }
+.frame-slider { width: 100%; margin: 20rpx 0 0; }
+.frame-slider-labels { margin-top: 4rpx; display: flex; justify-content: space-between; gap: 20rpx; color: #778395; font-size: 20rpx; }
+
+.progress-card,
+.error-card {
+  margin-top: 24rpx;
+  padding: 21rpx;
+  border-radius: 25rpx;
+  display: flex;
+  align-items: center;
+  gap: 17rpx;
+  font-size: 20rpx;
+  line-height: 1.45;
+}
+
+.progress-card { color: #1e5cb9; background: #edf4ff; }
+.progress-indicator { width: 24rpx; height: 24rpx; flex: 0 0 auto; border: 4rpx solid #b8cff7; border-top-color: #2869e8; border-radius: 50%; animation: progress-spin 0.8s linear infinite; }
+.progress-copy { min-width: 0; display: flex; flex-direction: column; gap: 5rpx; }
+.progress-title { font-weight: 700; }
+.progress-detail { color: #6b7688; font-size: 18rpx; }
+.error-card { align-items: flex-start; color: #a94343; background: #fff1f0; }
+.error-mark { width: 30rpx; height: 30rpx; flex: 0 0 auto; border: 2rpx solid #c66565; border-radius: 50%; color: #a94343; font-size: 20rpx; font-weight: 750; line-height: 26rpx; text-align: center; }
+
+@keyframes progress-spin { to { transform: rotate(360deg); } }
+
+.jpeg-result-card { margin-bottom: 20rpx; }
+.jpeg-result-heading { display: flex; align-items: center; gap: 17rpx; }
+.success-mark { width: 58rpx; height: 58rpx; flex: 0 0 auto; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #43876f; background: #edf5f1; font-size: 30rpx; font-weight: 750; }
+.jpeg-result-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 7rpx; }
+.jpeg-result-title { color: #182b45; font-size: 24rpx; font-weight: 750; }
+.jpeg-result-detail { color: #778395; font-size: 19rpx; }
+.jpeg-result-format { padding: 7rpx 13rpx; border-radius: 999rpx; color: #2869e8; background: #edf4ff; font-size: 18rpx; font-weight: 750; }
+.jpeg-result-image { width: 100%; height: 330rpx; margin-top: 24rpx; border-radius: 25rpx; display: block; background: #09101b; }
+.jpeg-result-preview { margin-top: 18rpx; color: #2869e8; font-size: 20rpx; font-weight: 700; text-align: center; }
+.jpeg-result-preview-hover { opacity: 0.7; }
+
+.export-canvas { width: 1px; height: 1px; position: fixed; z-index: -1; left: -10000px; top: -10000px; opacity: 0; pointer-events: none; }
 
 .bottom-action {
   position: fixed;
@@ -119,4 +221,5 @@
   line-height: 1.2;
 }
 
+.primary-button-hover { background: #1e5dcc; }
 .primary-button.is-disabled { opacity: 0.5; }
