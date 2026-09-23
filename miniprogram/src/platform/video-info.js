@@ -34,15 +34,52 @@ function asByteView(data) {
   return null;
 }
 
-function containsMp4FileTypeBox(data) {
+function readUint32(bytes, offset) {
+  return bytes[offset] * 0x1000000
+    + (bytes[offset + 1] << 16)
+    + (bytes[offset + 2] << 8)
+    + bytes[offset + 3];
+}
+
+function getMp4MajorBrand(data) {
   const bytes = asByteView(data);
-  if (!bytes) return false;
-  for (let index = 4; index <= bytes.length - 4; index += 1) {
-    if (bytes[index] === 0x66 && bytes[index + 1] === 0x74 && bytes[index + 2] === 0x79 && bytes[index + 3] === 0x70) {
-      return true;
+  if (!bytes) return '';
+
+  let offset = 0;
+  let boxesRead = 0;
+  while (offset + 8 <= bytes.length && boxesRead < 16) {
+    const size32 = readUint32(bytes, offset);
+    const isFileTypeBox = bytes[offset + 4] === 0x66
+      && bytes[offset + 5] === 0x74
+      && bytes[offset + 6] === 0x79
+      && bytes[offset + 7] === 0x70;
+    let boxSize = size32;
+    let headerSize = 8;
+
+    if (size32 === 1) {
+      if (offset + 16 > bytes.length) return '';
+      const high = readUint32(bytes, offset + 8);
+      const low = readUint32(bytes, offset + 12);
+      boxSize = high * 0x100000000 + low;
+      headerSize = 16;
     }
+
+    if (isFileTypeBox) {
+      const minimumSize = headerSize + 8;
+      if (boxSize < minimumSize || offset + minimumSize > bytes.length) return '';
+      return String.fromCharCode(
+        bytes[offset + headerSize],
+        bytes[offset + headerSize + 1],
+        bytes[offset + headerSize + 2],
+        bytes[offset + headerSize + 3],
+      );
+    }
+
+    if (boxSize === 0 || boxSize < headerSize || offset + boxSize > bytes.length) return '';
+    offset += boxSize;
+    boxesRead += 1;
   }
-  return false;
+  return '';
 }
 
 function orientDimensions(width, height, orientation) {
@@ -51,23 +88,36 @@ function orientDimensions(width, height, orientation) {
   return rotated ? { width: height, height: width } : { width, height };
 }
 
-async function inspectVideoSource(sourcePath) {
+async function inspectVideoSource(sourcePath, pickerInfo) {
+  if (!sourcePath) {
+    const error = new Error('没有读取到视频文件，请重新选择。');
+    error.code = 'VIDEO_PATH_MISSING';
+    throw error;
+  }
+
   const results = await Promise.all([
     getVideoInfo(sourcePath),
     readVideoPrefix(sourcePath),
   ]);
   const info = results[0];
   const header = results[1];
-  if (!containsMp4FileTypeBox(header)) {
-    throw new Error('当前版本需要带 MP4 媒体结构的视频，请选择可解码的 H.264 MP4。');
+  const majorBrand = getMp4MajorBrand(header);
+  const reportedType = String(info.type || '').toLowerCase();
+  if (!majorBrand || majorBrand === 'qt  ' || reportedType === 'mov') {
+    const error = new Error('当前先支持 MP4 视频，MOV 暂不支持。请重新选择 MP4 文件。');
+    error.code = 'UNSUPPORTED_VIDEO_CONTAINER';
+    throw error;
   }
 
-  const width = Number(info.width) || 0;
-  const height = Number(info.height) || 0;
+  const fallback = pickerInfo || {};
+  const width = Number(info.width) || Number(fallback.width) || 0;
+  const height = Number(info.height) || Number(fallback.height) || 0;
   const displaySize = orientDimensions(width, height, info.orientation || 'up');
-  const duration = Number(info.duration) || 0;
+  const duration = Number(info.duration) || Number(fallback.durationSeconds) || 0;
   if (!width || !height || !duration) {
-    throw new Error('无法读取视频时长或画面尺寸，请尝试其他 MP4 视频。');
+    const error = new Error('无法读取视频时长或画面尺寸，请尝试其他 MP4 视频。');
+    error.code = 'VIDEO_METADATA_UNAVAILABLE';
+    throw error;
   }
 
   return {
@@ -78,7 +128,7 @@ async function inspectVideoSource(sourcePath) {
     durationSeconds: duration,
     fps: Number(info.fps) || 0,
     orientation: info.orientation || 'up',
-    containerType: info.type || 'mp4',
+    containerType: info.type || majorBrand.trim() || 'mp4',
   };
 }
 

@@ -17,14 +17,20 @@
 
   <view wx:if="{{!video}}" class="upload-zone" hover-class="upload-zone-hover" bindtap="onChooseVideo">
     <view class="upload-icon"><ui-icon name="film-muted" size="25" /></view>
-    <text class="upload-title">{{picking ? '正在打开视频' : '选择一个视频'}}</text>
-    <text class="upload-caption">MP4 / MOV · 仅本机处理</text>
+    <text class="upload-title">{{pickingLabel}}</text>
+    <text class="upload-caption">MP4 视频 · 仅本机处理</text>
   </view>
 
   <view wx:else class="upload-zone is-compact" hover-class="upload-zone-hover" bindtap="onChooseVideo">
     <view class="upload-icon"><ui-icon name="film-muted" size="23" /></view>
-    <text class="upload-title">{{picking ? '正在打开视频' : '更换视频'}}</text>
-    <text class="upload-caption">{{video.name}} · {{video.sizeLabel}}</text>
+    <text class="upload-title">{{pickingLabel}}</text>
+    <text class="upload-caption">{{video.name}}</text>
+    <text class="upload-meta">{{video.sizeLabel}} · {{video.resolutionLabel}} · {{video.durationLabel}}</text>
+  </view>
+
+  <view wx:if="{{importError}}" class="error-card import-error-card">
+    <view class="error-mark">!</view>
+    <text class="error-copy">{{importError}}</text>
   </view>
 
   <view wx:if="{{video}}" class="frame-card">
@@ -33,7 +39,7 @@
       <text class="frame-heading-time">{{video.durationLabel}}</text>
     </view>
 
-    <view class="frame-preview-stage">
+    <view class="frame-preview-stage" bindtap="togglePreviewPlayback">
       <video
         id="source-video"
         class="frame-preview"
@@ -45,9 +51,18 @@
         muted="{{true}}"
         loop="{{false}}"
         object-fit="contain"
+        bindloadedmetadata="onVideoLoadedMetadata"
+        bindplay="onPreviewPlay"
+        bindpause="onPreviewPause"
+        bindended="onPreviewEnded"
         binderror="onVideoError"
       />
-      <image wx:if="{{coverPreviewPath}}" class="frame-cover-preview" src="{{coverPreviewPath}}" mode="aspectFit" />
+      <image wx:if="{{coverPreviewPath && !previewPlaying}}" class="frame-cover-preview" src="{{coverPreviewPath}}" mode="aspectFit" />
+    </view>
+    <view wx:if="{{previewStatus === 'loading'}}" class="preview-status">正在准备视频预览…</view>
+    <view wx:if="{{previewError}}" class="error-card preview-error-card">
+      <view class="error-mark">!</view>
+      <text class="error-copy">{{previewError}}</text>
     </view>
 
     <view class="frame-slider-summary">
@@ -80,7 +95,10 @@
     </view>
     <view wx:if="{{coverError}}" class="error-card">
       <view class="error-mark">!</view>
-      <text>{{coverError}}</text>
+      <view class="error-copy">
+        <text>{{coverError}}</text>
+        <text wx:if="{{!capturingCover}}" class="error-retry" bindtap="retryCoverCapture">重试提取</text>
+      </view>
     </view>
   </view>
 

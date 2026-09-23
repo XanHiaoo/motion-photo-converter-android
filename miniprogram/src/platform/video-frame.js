@@ -2,10 +2,25 @@ const MAX_FRAME_PIXELS = 10000000;
 const FRAME_POLL_INTERVAL_MS = 16;
 const FRAME_WAIT_TIMEOUT_MS = 8000;
 
-function waitForDecodedFrame(decoder) {
+function throwIfCanceled(shouldCancel) {
+  if (shouldCancel && shouldCancel()) {
+    const error = new Error('封面提取已取消。');
+    error.code = 'FRAME_CAPTURE_CANCELED';
+    throw error;
+  }
+}
+
+function waitForDecodedFrame(decoder, shouldCancel) {
   return new Promise((resolve, reject) => {
     const startedAt = Date.now();
     const poll = () => {
+      try {
+        throwIfCanceled(shouldCancel);
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
       let frame = null;
       try {
         frame = decoder.getFrameData();
@@ -19,7 +34,9 @@ function waitForDecodedFrame(decoder) {
         return;
       }
       if (Date.now() - startedAt >= FRAME_WAIT_TIMEOUT_MS) {
-        reject(new Error('等待视频解码帧超时，请换一个时间点或 H.264 MP4 视频。'));
+        const error = new Error('等待视频解码帧超时，请换一个时间点或 H.264 MP4 视频。');
+        error.code = 'VIDEO_FRAME_TIMEOUT';
+        reject(error);
         return;
       }
       setTimeout(poll, FRAME_POLL_INTERVAL_MS);
@@ -91,6 +108,10 @@ function canvasToJpeg(canvas, width, height) {
       fileType: 'jpg',
       quality: 0.95,
       success(result) {
+        if (!result || !result.tempFilePath) {
+          reject(new Error('微信没有返回封面 JPEG 文件，请重试。'));
+          return;
+        }
         resolve(result.tempFilePath);
       },
       fail: reject,
@@ -98,36 +119,62 @@ function canvasToJpeg(canvas, width, height) {
   });
 }
 
-async function captureVideoFrameToJpeg(sourcePath, seconds, orientation, sourceCanvas, outputCanvas) {
+async function captureVideoFrameToJpeg(sourcePath, seconds, orientation, sourceCanvas, outputCanvas, shouldCancel) {
   if (typeof wx.createVideoDecoder !== 'function') {
-    throw new Error('当前微信基础库不支持逐帧取图，请更新微信后重试。');
+    const error = new Error('当前微信版本不支持逐帧取图，请更新微信后重试。');
+    error.code = 'VIDEO_DECODER_UNAVAILABLE';
+    throw error;
   }
   if (!sourceCanvas || !outputCanvas
       || typeof sourceCanvas.getContext !== 'function'
       || typeof outputCanvas.getContext !== 'function') {
-    throw new Error('画布尚未初始化，请返回后重试。');
+    const error = new Error('封面画布尚未初始化，请返回后重试。');
+    error.code = 'FRAME_CANVAS_UNAVAILABLE';
+    throw error;
   }
 
-  const decoder = wx.createVideoDecoder();
+  let decoder = null;
   let didStart = false;
   try {
+    throwIfCanceled(shouldCancel);
+    decoder = wx.createVideoDecoder();
+    if (!decoder) {
+      const error = new Error('微信没有创建视频解码器，请重试。');
+      error.code = 'VIDEO_DECODER_CREATE_FAILED';
+      throw error;
+    }
+
     const startOptions = { source: sourcePath, mode: 0 };
-    if (wx.canIUse('VideoDecoder.start.object.abortAudio')) startOptions.abortAudio = true;
+    if (typeof wx.canIUse === 'function'
+        && wx.canIUse('VideoDecoder.start.object.abortAudio')) startOptions.abortAudio = true;
     const startInfo = await decoder.start(startOptions);
     didStart = true;
+    throwIfCanceled(shouldCancel);
     await decoder.seek(Math.max(0, Math.round(seconds * 1000)));
-    const frame = await waitForDecodedFrame(decoder);
+    throwIfCanceled(shouldCancel);
+    const frame = await waitForDecodedFrame(decoder, shouldCancel);
+    throwIfCanceled(shouldCancel);
     const width = Number(frame.width) || 0;
     const height = Number(frame.height) || 0;
-    if (!width || !height || width * height > MAX_FRAME_PIXELS) {
-      throw new Error('视频分辨率过高，当前无法安全导出封面。请先将视频缩小后重试。');
+    if (!width || !height || width > MAX_FRAME_PIXELS / height) {
+      const error = new Error('视频分辨率过高，当前无法安全导出封面。请先将视频缩小后重试。');
+      error.code = 'VIDEO_FRAME_TOO_LARGE';
+      throw error;
     }
 
-    const frameBytes = new Uint8Array(frame.data);
-    if (frameBytes.byteLength !== width * height * 4) {
-      throw new Error('当前视频解码器返回了不支持的像素格式，请换用 H.264 MP4。');
+    const frameBytes = ArrayBuffer.isView(frame.data)
+      ? new Uint8Array(frame.data.buffer, frame.data.byteOffset, frame.data.byteLength)
+      : frame.data instanceof ArrayBuffer
+        || Object.prototype.toString.call(frame.data) === '[object ArrayBuffer]'
+        ? new Uint8Array(frame.data)
+        : null;
+    if (!frameBytes || frameBytes.byteLength !== width * height * 4) {
+      const error = new Error('当前视频解码器返回了不支持的像素格式，请换用 H.264 MP4。');
+      error.code = 'VIDEO_FRAME_FORMAT_UNSUPPORTED';
+      throw error;
     }
 
+    throwIfCanceled(shouldCancel);
     sourceCanvas.width = width;
     sourceCanvas.height = height;
     const sourceContext = sourceCanvas.getContext('2d');
@@ -148,14 +195,20 @@ async function captureVideoFrameToJpeg(sourcePath, seconds, orientation, sourceC
       decoderHeight: Number(startInfo && startInfo.height) || height,
     };
   } finally {
-    if (didStart) {
+    if (decoder && didStart) {
       try { await decoder.stop(); } catch (_error) { /* remove below releases the decoder */ }
     }
-    try { await decoder.remove(); } catch (_error) { /* decoder may already be stopped */ }
-    sourceCanvas.width = 1;
-    sourceCanvas.height = 1;
-    outputCanvas.width = 1;
-    outputCanvas.height = 1;
+    if (decoder) {
+      try { await decoder.remove(); } catch (_error) { /* decoder may already be stopped */ }
+    }
+    if (sourceCanvas) {
+      sourceCanvas.width = 1;
+      sourceCanvas.height = 1;
+    }
+    if (outputCanvas) {
+      outputCanvas.width = 1;
+      outputCanvas.height = 1;
+    }
   }
 }
 
