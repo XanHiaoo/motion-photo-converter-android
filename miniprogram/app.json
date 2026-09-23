@@ -1,0 +1,14 @@
+{
+  "pages": [
+    "src/pages/home/index",
+    "src/pages/video/index"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#f7faff",
+    "backgroundTextStyle": "light",
+    "enablePullDownRefresh": false
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

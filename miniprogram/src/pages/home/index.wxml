@@ -1,0 +1,48 @@
+<view class="home-page" style="padding-top: {{insets.homeTopRpx}}rpx; padding-bottom: {{insets.homeBottomRpx}}rpx;">
+  <view class="brand-row">
+    <ui-icon class="brand-mark" name="brand" size="40" />
+    <view class="brand-name">
+      <text class="brand-main">Motion Photo</text>
+      <text class="brand-sub">Tool</text>
+    </view>
+  </view>
+
+  <view class="home-intro">
+    <text class="home-title">动态图工具</text>
+    <text class="home-subtitle">轻松生成 Samsung Motion Photo</text>
+  </view>
+
+  <text class="section-label">选择创建方式</text>
+
+  <view class="home-actions">
+    <view class="home-card home-card-primary" hover-class="card-primary-hover" bindtap="openVideo">
+      <view class="home-card-icon primary-icon"><ui-icon name="film-white" size="22" /></view>
+      <view class="home-card-copy primary-copy">
+        <text class="home-card-title">视频生成动态图</text>
+        <text class="home-card-subtitle">截取片段，选择一帧作封面</text>
+      </view>
+      <ui-icon class="home-chevron primary-chevron" name="chevron-white" size="18" />
+    </view>
+
+    <view class="home-secondary-row">
+      <view class="home-card home-card-secondary" hover-class="card-hover" bindtap="openBatch">
+        <view class="home-card-icon secondary-icon-green"><ui-icon name="stack-green" size="21" /></view>
+        <text class="home-card-title secondary-title">批量转换</text>
+        <text class="home-card-subtitle secondary-subtitle">一次转换多个动态照片</text>
+        <ui-icon class="home-chevron secondary-chevron" name="chevron-gray" size="18" />
+      </view>
+
+      <view class="home-card home-card-secondary" hover-class="card-hover" bindtap="openManual">
+        <view class="home-card-icon secondary-icon-purple"><ui-icon name="combine-purple" size="21" /></view>
+        <text class="home-card-title secondary-title">照片 + 视频</text>
+        <text class="home-card-subtitle secondary-subtitle">组合成动态照片</text>
+        <ui-icon class="home-chevron secondary-chevron" name="chevron-gray" size="18" />
+      </view>
+    </view>
+  </view>
+
+  <view class="home-bottom-meta">
+    <ui-icon name="lock-muted" size="16" />
+    <text>仅在本机处理，不会上传</text>
+  </view>
+</view>

@@ -1,0 +1,30 @@
+<view class="video-page" style="padding-top: {{insets.videoTopRpx}}rpx; padding-bottom: {{insets.videoBottomRpx}}rpx;">
+  <view class="mode-header">
+    <view class="back-button" hover-class="back-button-hover" bindtap="goBack" aria-label="返回首页">
+      <ui-icon name="arrow-left" size="21" />
+    </view>
+    <text class="mode-title">视频生成 Motion Photo</text>
+  </view>
+
+  <view class="privacy-note">
+    <ui-icon name="lock-muted" size="16" />
+    <text>仅在本机处理，不会上传</text>
+  </view>
+
+  <view class="section-heading">
+    <text>选择片段和封面，生成 Samsung Motion Photo。</text>
+  </view>
+
+  <view class="upload-zone">
+    <view class="upload-icon"><ui-icon name="film-muted" size="25" /></view>
+    <text class="upload-title">选择一个视频</text>
+    <text class="upload-caption">MP4 / MOV · 仅本机处理</text>
+  </view>
+
+  <view class="bottom-action" style="bottom: {{insets.actionBottomRpx}}rpx;">
+    <view class="primary-button is-disabled" aria-disabled="true">
+      <ui-icon name="images-white" size="19" />
+      <text>生成 Motion Photo</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,122 @@
+.video-page {
+  width: 100%;
+  max-width: 785rpx;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-right: 40rpx;
+  padding-left: 40rpx;
+  color: #182b45;
+  background: #f7f8fa;
+}
+
+.mode-header {
+  min-height: 84rpx;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.back-button {
+  width: 69rpx;
+  height: 69rpx;
+  flex: 0 0 69rpx;
+  border: 1rpx solid #e6eaf0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #182b45;
+  background: #fff;
+  box-shadow: 0 4rpx 13rpx rgba(26, 45, 75, 0.04);
+  line-height: 1;
+}
+
+.back-button-hover { background: #edf3ff; }
+
+.mode-title {
+  min-width: 0;
+  flex: 1;
+  color: #182b45;
+  font-size: 26rpx;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.privacy-note {
+  margin-top: 29rpx;
+  display: flex;
+  align-items: center;
+  gap: 13rpx;
+  color: #8a94a1;
+  font-size: 18rpx;
+  line-height: 1.4;
+}
+
+.section-heading {
+  margin-top: 66rpx;
+  color: #6b7688;
+  font-size: 24rpx;
+  line-height: 1.55;
+}
+
+.upload-zone {
+  width: 100%;
+  min-height: 325rpx;
+  margin-top: 40rpx;
+  padding: 44rpx;
+  border: 2rpx dashed #cbd9eb;
+  border-radius: 40rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #182b45;
+  background: #fff;
+  box-shadow: 0 7rpx 25rpx rgba(26, 45, 75, 0.04);
+  line-height: 1.4;
+}
+
+.upload-icon {
+  width: 69rpx;
+  height: 73rpx;
+  margin-bottom: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-title { color: #182b45; font-size: 27rpx; font-weight: 700; }
+.upload-caption { margin-top: 11rpx; color: #6b7688; font-size: 20rpx; }
+
+.bottom-action {
+  position: fixed;
+  z-index: 10;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 22rpx 36rpx 26rpx;
+  border-top: 1rpx solid rgba(230, 234, 240, 0.86);
+  background: rgba(247, 248, 250, 0.96);
+}
+
+.primary-button {
+  width: 100%;
+  max-width: 840rpx;
+  min-height: 98rpx;
+  margin: 0 auto;
+  padding: 0 36rpx;
+  border: 0;
+  border-radius: 27rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16rpx;
+  color: #fff;
+  background: #2869e8;
+  box-shadow: 0 15rpx 33rpx rgba(37, 111, 232, 0.18);
+  font-size: 26rpx;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.primary-button.is-disabled { opacity: 0.5; }

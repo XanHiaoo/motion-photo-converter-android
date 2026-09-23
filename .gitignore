@@ -21,3 +21,6 @@ app/keystore.properties
 # Local Android signing
 *.jks
 *keystore.properties
+
+# WeChat Developer Tools local-only settings
+miniprogram/project.private.config.json
