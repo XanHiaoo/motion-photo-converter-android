@@ -9,6 +9,6 @@
   "theme_color": "#176bff",
   "lang": "zh-CN",
   "icons": [
-    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "./motion-photo-icon-functional-simple-approved.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }

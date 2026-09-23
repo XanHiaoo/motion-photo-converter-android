@@ -1,8 +1,8 @@
-const CACHE = 'motion-photo-converter-v2';
+const CACHE = 'motion-photo-converter-v3';
 const BASE = self.registration.scope;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll([BASE, `${BASE}manifest.webmanifest`, `${BASE}favicon.svg`])))
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll([BASE, `${BASE}manifest.webmanifest`, `${BASE}motion-photo-icon-functional-simple-approved.svg`])))
   self.skipWaiting();
 });
 

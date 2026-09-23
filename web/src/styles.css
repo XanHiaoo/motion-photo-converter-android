@@ -291,7 +291,7 @@ body {
   height: 33px;
   border-radius: 10px;
   color: #2869e8;
-  background: #edf3ff;
+  background: transparent;
   box-shadow: none;
 }
 
@@ -674,28 +674,77 @@ body {
 }
 
 .home-minimal .brand-row {
-  gap: 8px;
+  gap: 10px;
 }
 
 .home-minimal .brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  color: #3673de;
-  background: #ffffff;
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  color: #4e7fcf;
+  background: transparent;
   box-shadow: none;
 }
 
-.home-minimal .brand-name {
+.home-minimal .brand-logo {
+  width: 100%;
+  height: 100%;
   display: block;
-  color: #788394;
+  object-fit: contain;
+  border-radius: inherit;
+}
+
+.home-minimal .brand-name {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  color: var(--ink);
 }
 
 .home-minimal .brand-name strong {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  overflow: hidden;
+  color: #18304f;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.home-minimal .brand-name strong span {
+  overflow: hidden;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-minimal .brand-name .brand-word-main {
+  color: #18304f;
+}
+
+.home-minimal .brand-name .brand-word-sub {
+  color: #4e7fcf;
+  font-weight: 550;
+}
+
+/* Keep the lockup on one line on narrow phones without shrinking the icon. */
+@media (max-width: 359px) {
+  .home-minimal .brand-name strong {
+    gap: 5px;
+    font-size: 16px;
+  }
+}
+
+.home-minimal .brand-name small {
   color: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0;
+  font-size: 10px;
 }
 
 .home-minimal .home-intro {
@@ -823,16 +872,41 @@ body {
   color: #a0aab8;
 }
 
-.home-bottom-caption {
-  margin: 30px 0 0;
-  color: #a0a8b4;
-  font-size: 9px;
-  letter-spacing: 0.06em;
-  text-align: center;
+.home-bottom-meta {
+  margin: auto 0 22px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px 18px;
+  color: #8a94a1;
+  font-size: 10px;
+}
+
+.home-bottom-meta .privacy-note {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: inherit;
+  background: transparent;
+}
+
+.home-bottom-meta .privacy-note .scheme-a-icon {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+}
+
+.home-bottom-meta .privacy-note span {
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 .home-minimal .privacy-note {
-  margin: 26px 0 22px;
+  margin: 0;
   padding: 0;
   border: 0;
   justify-content: center;
@@ -843,6 +917,95 @@ body {
 .home-minimal .privacy-note .scheme-a-icon {
   width: 16px;
   height: 16px;
+}
+
+/* Home layout D: one full-width entry followed by two compact shortcuts. */
+.home-layout-d {
+  overflow: visible;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  background: transparent;
+}
+
+.home-layout-d .home-tool {
+  min-height: 126px;
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  border-radius: 17px;
+  background: #ffffff;
+}
+
+.home-layout-d .home-tool:first-child {
+  grid-column: 1 / -1;
+  min-height: 142px;
+  flex-direction: row;
+  align-items: center;
+  padding: 20px 16px;
+  color: #ffffff;
+  background: #4e7fcf;
+}
+
+.home-layout-d .home-tool:first-child:hover,
+.home-layout-d .home-tool:first-child:focus-visible {
+  background: #4776c0;
+}
+
+.home-layout-d .home-tool:first-child .home-tool-icon {
+  color: #ffffff;
+  background: rgba(255, 255, 255, .16);
+}
+
+.home-layout-d .home-tool:first-child .home-tool-copy small {
+  color: #edf3ff;
+}
+
+.home-layout-d .home-tool:first-child > .scheme-a-icon {
+  color: #ffffff;
+}
+
+.home-layout-d .home-tool + .home-tool::before {
+  display: none;
+}
+
+.home-layout-d .home-tool-copy strong,
+.home-layout-d .home-tool-copy small {
+  white-space: normal;
+}
+
+.home-layout-d .home-tool > .scheme-a-icon {
+  position: absolute;
+  top: 16px;
+  right: 14px;
+}
+
+.home-layout-d .home-tool:first-child > .scheme-a-icon {
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+}
+
+.home-layout-d .home-tool-copy {
+  padding-right: 20px;
+}
+
+.home-layout-d .home-tool:not(:first-child) .home-tool-copy {
+  padding-right: 0;
+}
+
+.home-layout-d .home-tool:not(:first-child) .home-tool-copy strong,
+.home-layout-d .home-tool:not(:first-child) .home-tool-copy small {
+  white-space: nowrap;
+}
+
+.home-layout-d .home-tool:not(:first-child) .home-tool-copy strong {
+  font-size: 13px;
+  letter-spacing: -0.03em;
+}
+
+.home-layout-d .home-tool:first-child .home-tool-copy {
+  padding-right: 26px;
 }
 
 @media (min-width: 700px) {

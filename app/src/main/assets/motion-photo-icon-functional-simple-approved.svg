@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Motion Photo Converter</title>
+  <desc id="desc">Motion Photo Converter application icon</desc>
+  <defs>
+    <linearGradient id="motion-border-gradient" x1="262" y1="0" x2="742" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4e7fcf" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#4e7fcf" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(512 512) scale(1.5) translate(-512 -512)">
+    <rect x="438" y="292" width="360" height="440" rx="96" fill="#a9c1e3"/>
+    <rect x="262" y="260" width="480" height="480" rx="112" fill="url(#motion-border-gradient)"/>
+    <rect x="271" y="269" width="462" height="462" rx="103" fill="#FFFFFF"/>
+    <rect x="348" y="346" width="308" height="308" rx="70" fill="url(#motion-border-gradient)"/>
+    <rect x="354" y="352" width="296" height="296" rx="64" fill="#edf3fb"/>
+    <path d="M474 426c-18-12-40 1-40 22v104c0 21 22 34 40 22l82-52c17-11 17-35 0-46z" fill="#4e7fcf"/>
+  </g>
+</svg>

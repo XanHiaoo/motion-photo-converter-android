@@ -1138,13 +1138,13 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
 function Home({ onOpen }: { onOpen: (view: View) => void }) {
   return (
     <main className="home-shell home-minimal">
-      <header className="brand-row"><div className="brand-mark"><SchemeAIcon name="photos" /></div><div className="brand-name"><strong>Motion Photo Converter</strong></div></header>
+      <header className="brand-row"><div className="brand-mark"><img className="brand-logo" src="./motion-photo-icon-functional-simple-approved.svg" alt="" aria-hidden="true" /></div><div className="brand-name"><strong><span className="brand-word-main">Motion Photo</span><span className="brand-word-sub">Converter</span></strong></div></header>
       <section className="home-intro" aria-label="Motion Photo Converter 首页">
         <h1>动态图工具</h1>
         <p>轻松生成 Samsung Motion Photo</p>
       </section>
       <p className="home-section-label">选择创建方式</p>
-      <section className="home-tool-list" aria-label="转换方式">
+      <section className="home-tool-list home-layout-d" aria-label="转换方式">
         <button className="home-tool" type="button" onClick={() => onOpen('video')}>
           <span className="home-tool-icon"><SchemeAIcon name="film" /></span>
           <span className="home-tool-copy"><strong>视频生成动态图</strong><small>截取片段，选择一帧作封面</small></span>
@@ -1152,17 +1152,18 @@ function Home({ onOpen }: { onOpen: (view: View) => void }) {
         </button>
         <button className="home-tool" type="button" onClick={() => onOpen('embedded')}>
           <span className="home-tool-icon"><SchemeAIcon name="stack" /></span>
-          <span className="home-tool-copy"><strong>批量导入动态图</strong><small>一次转换多个动态照片</small></span>
+          <span className="home-tool-copy"><strong>批量转换</strong><small>一次转换多个动态照片</small></span>
           <SchemeAIcon name="chevron" />
         </button>
         <button className="home-tool" type="button" onClick={() => onOpen('manual')}>
           <span className="home-tool-icon"><SchemeAIcon name="combine" /></span>
-          <span className="home-tool-copy"><strong>照片和视频合成动态图</strong><small>组合独立的照片和视频</small></span>
+          <span className="home-tool-copy"><strong>照片 + 视频</strong><small>组合成动态照片</small></span>
           <SchemeAIcon name="chevron" />
         </button>
       </section>
-      <p className="home-bottom-caption">Compatible with Samsung</p>
-      <PrivacyNote />
+      <div className="home-bottom-meta">
+        <PrivacyNote />
+      </div>
     </main>
   );
 }
