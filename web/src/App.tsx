@@ -239,8 +239,6 @@ function MotionFileMode({ onBack }: { onBack: () => void }) {
       <ModeHeader title="批量导入动态图" onBack={onBack} />
       <PrivacyNote />
       <section className="section-heading">
-        <span className="step-pill">批量模式</span>
-        <h1>一次选择多个动态图</h1>
         <p>解析图片和内嵌视频，批量转换为 Samsung Motion Photo。</p>
       </section>
 
@@ -512,7 +510,7 @@ function ManualMode({ onBack }: { onBack: () => void }) {
     <main className="screen-shell">
       <ModeHeader title="照片和视频合成动态图" onBack={onBack} />
       <PrivacyNote />
-      <section className="section-heading"><span className="step-pill">手动合成</span><h1>选择照片和视频</h1><p>选择照片作为封面，再截取视频片段合成动态图。</p></section>
+      <section className="section-heading"><p>选择照片作为封面，再截取视频片段合成动态图。</p></section>
       <section className="manual-stack"><FilePicker kind="照片" file={image} accept={IMAGE_ACCEPT} icon="image" onChange={replaceImage} /><div className="connector"><Plus size={15} /></div><FilePicker kind="视频" file={video} accept={VIDEO_ACCEPT} icon="video" onChange={(file) => { void replaceVideo(file); }} /></section>
       <label className="image-size-option">
         <input type="checkbox" checked={fitImageToVideo} onChange={(event) => setFitImageToVideo(event.currentTarget.checked)} disabled={!playableVideo || status === 'working' || status === 'analyzing'} />
@@ -1072,7 +1070,7 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
     <main className="screen-shell">
       <ModeHeader title="视频生成 Motion Photo" onBack={onBack} />
       <PrivacyNote />
-      <section className="section-heading"><span className="step-pill">视频模式</span><h1>用视频生成 Motion Photo</h1><p>选择片段和封面，生成 Samsung Motion Photo。</p></section>
+      <section className="section-heading"><p>选择片段和封面，生成 Samsung Motion Photo。</p></section>
       <button className={`upload-zone ${source ? 'is-compact' : ''}`} type="button" disabled={status === 'working' || status === 'analyzing'} onClick={() => inputRef.current?.click()}>
         <span className="upload-icon"><Film size={25} /></span>
         <strong>{source ? '更换视频' : '选择一个视频'}</strong>
