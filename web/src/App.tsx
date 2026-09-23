@@ -1057,25 +1057,30 @@ function VideoOnlyMode({ onBack }: { onBack: () => void }) {
 function Home({ onOpen }: { onOpen: (view: View) => void }) {
   return (
     <main className="home-shell home-minimal">
-      <header className="brand-row"><div className="brand-mark"><SchemeAIcon name="photos" /></div><div className="brand-name"><strong>Motion Photo Converter</strong><small>SAMSUNG TOOL</small></div></header>
+      <header className="brand-row"><div className="brand-mark"><SchemeAIcon name="photos" /></div><div className="brand-name"><strong>Motion Photo Converter</strong></div></header>
       <section className="home-intro" aria-label="Motion Photo Converter 首页">
-        <h1>让照片，<br /><span>多一点动态。</span></h1>
+        <h1>动态图工具</h1>
         <p>轻松生成 Samsung Motion Photo</p>
       </section>
-      <section className="home-actions" aria-label="转换方式">
-        <button className="home-action home-action-primary" type="button" onClick={() => onOpen('video')}>
-          <span className="home-action-label"><SchemeAIcon name="film" /><span>从一段视频开始</span></span>
-          <span className="home-action-main"><span><strong>视频生成动态图</strong><small>截取片段 · 选择封面</small></span><SchemeAIcon name="arrow" /></span>
+      <p className="home-section-label">选择创建方式</p>
+      <section className="home-tool-list" aria-label="转换方式">
+        <button className="home-tool" type="button" onClick={() => onOpen('video')}>
+          <span className="home-tool-icon"><SchemeAIcon name="film" /></span>
+          <span className="home-tool-copy"><strong>视频生成动态图</strong><small>截取片段，选择一帧作封面</small></span>
+          <SchemeAIcon name="chevron" />
         </button>
-        <button className="home-action" type="button" onClick={() => onOpen('embedded')}>
-          <span className="home-action-icon"><SchemeAIcon name="stack" /></span>
-          <span className="home-action-main"><span><strong>批量导入动态图</strong><small>将已有动态图转换为 Samsung 格式</small></span><SchemeAIcon name="chevron" /></span>
+        <button className="home-tool" type="button" onClick={() => onOpen('embedded')}>
+          <span className="home-tool-icon"><SchemeAIcon name="stack" /></span>
+          <span className="home-tool-copy"><strong>批量导入动态图</strong><small>一次转换多个动态照片</small></span>
+          <SchemeAIcon name="chevron" />
         </button>
-        <button className="home-action" type="button" onClick={() => onOpen('manual')}>
-          <span className="home-action-icon"><SchemeAIcon name="combine" /></span>
-          <span className="home-action-main"><span><strong>照片和视频合成动态图</strong><small>用照片作封面，合成视频片段</small></span><SchemeAIcon name="chevron" /></span>
+        <button className="home-tool" type="button" onClick={() => onOpen('manual')}>
+          <span className="home-tool-icon"><SchemeAIcon name="combine" /></span>
+          <span className="home-tool-copy"><strong>照片和视频合成动态图</strong><small>组合独立的照片和视频</small></span>
+          <SchemeAIcon name="chevron" />
         </button>
       </section>
+      <p className="home-bottom-caption">Compatible with Samsung</p>
       <PrivacyNote />
     </main>
   );
