@@ -20,6 +20,45 @@ function getVideoName(file) {
   return name && name !== pathName ? name : '已选择视频';
 }
 
+function copyWxTempVideoToAppStorage(sourcePath) {
+  if (!/^wxfile:\/\/temp\//i.test(sourcePath)
+      || !wx.env || !wx.env.USER_DATA_PATH
+      || typeof wx.getFileSystemManager !== 'function') {
+    return Promise.resolve({ path: sourcePath, sourceTempPath: '' });
+  }
+
+  let fileSystemManager;
+  try {
+    fileSystemManager = wx.getFileSystemManager();
+  } catch (_error) {
+    return Promise.resolve({ path: sourcePath, sourceTempPath: '' });
+  }
+  if (!fileSystemManager || typeof fileSystemManager.copyFile !== 'function') {
+    return Promise.resolve({ path: sourcePath, sourceTempPath: '' });
+  }
+
+  const extensionMatch = sourcePath.match(/\.([a-z0-9]+)(?:[?#].*)?$/i);
+  const extension = extensionMatch ? extensionMatch[1] : 'mp4';
+  const targetPath = `${wx.env.USER_DATA_PATH}/selected-video-${Date.now()}-${Math.floor(Math.random() * 1000000)}.${extension}`;
+
+  return new Promise((resolve) => {
+    fileSystemManager.copyFile({
+      srcPath: sourcePath,
+      destPath: targetPath,
+      success() {
+        console.warn('[video-picker] copied wxfile temp video into app storage');
+        resolve({ path: targetPath, sourceTempPath: sourcePath });
+      },
+      fail(error) {
+        let detail = String((error && (error.errMsg || error.message)) || 'Unknown error');
+        detail = detail.split(sourcePath).join('[selected video]');
+        console.warn(`[video-picker] temp video copy failed; keeping original path: ${detail.slice(0, 200)}`);
+        resolve({ path: sourcePath, sourceTempPath: '' });
+      },
+    });
+  });
+}
+
 function chooseVideoFromAlbum() {
   return new Promise((resolve, reject) => {
     if (typeof wx.chooseMedia !== 'function') {
@@ -45,17 +84,21 @@ function chooseVideoFromAlbum() {
         const duration = Number(file.duration) || 0;
         const width = Number(file.width) || 0;
         const height = Number(file.height) || 0;
-        resolve({
-          path: file.tempFilePath,
-          name: getVideoName(file),
-          sizeBytes: Number(file.size) || 0,
-          sizeLabel: formatFileSize(file.size),
-          durationSeconds: duration,
-          durationLabel: duration > 0 ? formatDuration(duration) : '时长未知',
-          width,
-          height,
-          resolutionLabel: width > 0 && height > 0 ? `${width} × ${height}` : '尺寸未知',
-          thumbnailPath: file.thumbTempFilePath || '',
+        console.warn(`[video-picker] selected metadata duration=${duration} width=${width} height=${height} size=${Number(file.size) || 0}`);
+        copyWxTempVideoToAppStorage(file.tempFilePath).then((source) => {
+          resolve({
+            path: source.path,
+            sourceTempPath: source.sourceTempPath,
+            name: getVideoName(file),
+            sizeBytes: Number(file.size) || 0,
+            sizeLabel: formatFileSize(file.size),
+            durationSeconds: duration,
+            durationLabel: duration > 0 ? formatDuration(duration) : '时长未知',
+            width,
+            height,
+            resolutionLabel: width > 0 && height > 0 ? `${width} × ${height}` : '尺寸未知',
+            thumbnailPath: file.thumbTempFilePath || '',
+          });
         });
       },
       fail: reject,

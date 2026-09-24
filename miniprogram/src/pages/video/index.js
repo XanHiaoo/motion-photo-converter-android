@@ -51,6 +51,32 @@ function removeTemporaryFile(filePath) {
   }
 }
 
+function logSafeRuntimeError(stage, error, sourcePath) {
+  let detail = '';
+  if (typeof error === 'string') {
+    detail = error;
+  } else if (error && (error.errMsg || error.message)) {
+    detail = String(error.errMsg || error.message);
+  } else if (error && typeof error === 'object') {
+    try {
+      detail = Object.getOwnPropertyNames(error)
+        .filter((name) => name !== 'stack' && name !== 'videoFrameStage')
+        .map((name) => `${name}=${String(error[name])}`)
+        .join(' ');
+    } catch (_error) {
+      detail = '';
+    }
+  }
+  if (!detail) {
+    detail = error && typeof error === 'object'
+      ? 'Native API returned an empty error object'
+      : String(error || 'Unknown error');
+  }
+  if (sourcePath) detail = detail.split(sourcePath).join('[selected video]');
+  const errorStage = error && error.videoFrameStage ? ` (${error.videoFrameStage})` : '';
+  console.warn(`[${stage}]${errorStage} ${detail.slice(0, 300)}`);
+}
+
 function removeTemporaryFiles(filePaths, keepPath) {
   const seen = new Set();
   (filePaths || []).forEach((filePath) => {
@@ -196,7 +222,7 @@ Page({
     }
 
     if (!this.isCurrentImport(requestId)) {
-      removeTemporaryFiles([video.path], this.data.video && this.data.video.path);
+      removeTemporaryFiles([video.path, video.sourceTempPath], this.data.video && this.data.video.path);
       return;
     }
     this.setData({
@@ -209,7 +235,7 @@ Page({
       videoInfo = await inspectVideoSource(video.path, video);
     } catch (error) {
       if (!this.isCurrentImport(requestId)) {
-        removeTemporaryFiles([video.path], this.data.video && this.data.video.path);
+        removeTemporaryFiles([video.path, video.sourceTempPath], this.data.video && this.data.video.path);
         return;
       }
       const message = getErrorMessage(
@@ -217,7 +243,7 @@ Page({
         '无法读取视频信息，请重新选择 MP4 视频。',
         'import',
       );
-      removeTemporaryFiles([video.path], this.data.video && this.data.video.path);
+      removeTemporaryFiles([video.path, video.sourceTempPath], this.data.video && this.data.video.path);
       const baseFlow = this.data.video
         ? this.data.flow
         : (this.importFlowBeforeRequest || createInitialVideoState());
@@ -236,7 +262,7 @@ Page({
     }
 
     if (!this.isCurrentImport(requestId)) {
-      removeTemporaryFiles([video.path], this.data.video && this.data.video.path);
+      removeTemporaryFiles([video.path, video.sourceTempPath], this.data.video && this.data.video.path);
       return;
     }
 
@@ -244,6 +270,7 @@ Page({
     const previousPreviewPath = this.data.coverPreviewPath;
     this.retiredTemporaryPaths = (this.retiredTemporaryPaths || []).concat([
       previousVideo && previousVideo.path,
+      previousVideo && previousVideo.sourceTempPath,
       previousVideo && previousVideo.thumbnailPath,
       previousPreviewPath,
       this.data.flow && this.data.flow.outputPath,
@@ -373,6 +400,7 @@ Page({
   },
 
   onVideoError(event) {
+    logSafeRuntimeError('video-preview', event && event.detail, this.data.video && this.data.video.path);
     const message = getErrorMessage(
       event && event.detail,
       '视频预览失败。请换用微信可播放的 MP4 视频，或重新选择视频。',
@@ -395,11 +423,14 @@ Page({
   async captureCoverAt(seconds) {
     if (!this.data.video || !this.data.videoInfo) return;
     const sourcePath = this.data.video.path;
+    const decoderSourcePath = this.data.video.sourceTempPath || sourcePath;
+    console.warn(`[video-frame] decoding from ${this.data.video.sourceTempPath ? 'picker temp path' : 'app storage copy'}`);
     const previousPreviewPath = this.data.coverPreviewPath;
     const requestId = (this.frameRequestId || 0) + 1;
     this.frameRequestId = requestId;
     const coverTimeSeconds = Math.max(0, Math.min(this.data.sliderMaxSeconds, Number(seconds) || 0));
     const orientation = this.data.videoInfo.orientation;
+    let activeDecoderPath = decoderSourcePath;
     const flow = Object.assign({}, this.data.flow, {
       status: VIDEO_FLOW_STATES.WORKING,
       coverTimeSeconds,
@@ -426,19 +457,40 @@ Page({
         error.code = 'FRAME_CANVAS_UNAVAILABLE';
         throw error;
       }
-      const frame = await captureVideoFrameToJpeg(
-        sourcePath,
-        coverTimeSeconds,
-        orientation,
-        this.sourceCanvas,
-        this.outputCanvas,
-        () => !this.isCurrentFrameRequest(requestId, sourcePath),
-      );
+      let frame;
+      try {
+        frame = await captureVideoFrameToJpeg(
+          decoderSourcePath,
+          coverTimeSeconds,
+          orientation,
+          this.sourceCanvas,
+          this.outputCanvas,
+          () => !this.isCurrentFrameRequest(requestId, sourcePath),
+        );
+      } catch (error) {
+        if (error && error.videoFrameStage === 'decoder-start'
+            && this.data.video.sourceTempPath
+            && sourcePath !== decoderSourcePath) {
+          activeDecoderPath = sourcePath;
+          console.warn('[video-frame] picker temp decoder start failed; retrying app storage copy');
+          frame = await captureVideoFrameToJpeg(
+            sourcePath,
+            coverTimeSeconds,
+            orientation,
+            this.sourceCanvas,
+            this.outputCanvas,
+            () => !this.isCurrentFrameRequest(requestId, sourcePath),
+          );
+        } else {
+          throw error;
+        }
+      }
       if (!this.isCurrentFrameRequest(requestId, sourcePath)) {
         removeTemporaryFile(frame.path);
         return;
       }
 
+      console.warn(`[video-frame] JPEG extracted ${frame.width}x${frame.height} at ${coverTimeSeconds}s`);
       const coverFrameInfo = Object.assign({}, frame, { requestedSeconds: coverTimeSeconds });
       const readyFlow = Object.assign({}, this.data.flow, { status: VIDEO_FLOW_STATES.READY });
       this.setData({
@@ -450,6 +502,7 @@ Page({
       });
     } catch (error) {
       if (!this.isCurrentFrameRequest(requestId, sourcePath)) return;
+      logSafeRuntimeError('video-frame', error, activeDecoderPath);
       const message = getErrorMessage(error, '无法生成封面帧，请重新选择视频或时间点。', 'capture');
       const errorFlow = Object.assign({}, this.data.flow, {
         status: VIDEO_FLOW_STATES.ERROR,
@@ -517,6 +570,7 @@ Page({
     const video = this.data.video || {};
     removeTemporaryFiles([
       video.path,
+      video.sourceTempPath,
       video.thumbnailPath,
       this.data.coverPreviewPath,
       this.data.coverFrameInfo && this.data.coverFrameInfo.path,

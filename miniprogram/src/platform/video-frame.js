@@ -1,6 +1,27 @@
 const MAX_FRAME_PIXELS = 10000000;
 const FRAME_POLL_INTERVAL_MS = 16;
 const FRAME_WAIT_TIMEOUT_MS = 8000;
+const FRAME_DECODER_START_TIMEOUT_MS = 12000;
+
+function startDecoderWithTimeout(decoder, options) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      const error = new Error(`VideoDecoder.start timed out after ${FRAME_DECODER_START_TIMEOUT_MS}ms`);
+      error.code = 'VIDEO_DECODER_START_TIMEOUT';
+      reject(error);
+    }, FRAME_DECODER_START_TIMEOUT_MS);
+
+    Promise.resolve()
+      .then(() => decoder.start(options))
+      .then((result) => {
+        clearTimeout(timer);
+        resolve(result);
+      }, (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
+}
 
 function throwIfCanceled(shouldCancel) {
   if (shouldCancel && shouldCancel()) {
@@ -135,6 +156,7 @@ async function captureVideoFrameToJpeg(sourcePath, seconds, orientation, sourceC
 
   let decoder = null;
   let didStart = false;
+  let stage = 'create-decoder';
   try {
     throwIfCanceled(shouldCancel);
     decoder = wx.createVideoDecoder();
@@ -144,15 +166,17 @@ async function captureVideoFrameToJpeg(sourcePath, seconds, orientation, sourceC
       throw error;
     }
 
-    const startOptions = { source: sourcePath, mode: 0 };
-    if (typeof wx.canIUse === 'function'
-        && wx.canIUse('VideoDecoder.start.object.abortAudio')) startOptions.abortAudio = true;
-    const startInfo = await decoder.start(startOptions);
+    const startOptions = { source: sourcePath };
+    stage = 'decoder-start';
+    const startInfo = await startDecoderWithTimeout(decoder, startOptions);
     didStart = true;
     throwIfCanceled(shouldCancel);
+    stage = 'seek';
     await decoder.seek(Math.max(0, Math.round(seconds * 1000)));
     throwIfCanceled(shouldCancel);
+    stage = 'wait-for-frame';
     const frame = await waitForDecodedFrame(decoder, shouldCancel);
+    stage = 'write-source-canvas';
     throwIfCanceled(shouldCancel);
     const width = Number(frame.width) || 0;
     const height = Number(frame.height) || 0;
@@ -183,7 +207,9 @@ async function captureVideoFrameToJpeg(sourcePath, seconds, orientation, sourceC
     imageData.data.set(frameBytes);
     sourceContext.putImageData(imageData, 0, 0);
 
+    stage = 'draw-output-canvas';
     const outputSize = drawOrientedFrame(sourceCanvas, outputCanvas, width, height, orientation || 'up');
+    stage = 'export-jpeg';
     const path = await canvasToJpeg(outputCanvas, outputSize.width, outputSize.height);
     return {
       path,
@@ -194,6 +220,11 @@ async function captureVideoFrameToJpeg(sourcePath, seconds, orientation, sourceC
       decoderWidth: Number(startInfo && startInfo.width) || width,
       decoderHeight: Number(startInfo && startInfo.height) || height,
     };
+  } catch (error) {
+    if (error && typeof error === 'object') {
+      try { error.videoFrameStage = stage; } catch (_ignored) { /* native error may be read-only */ }
+    }
+    throw error;
   } finally {
     if (decoder && didStart) {
       try { await decoder.stop(); } catch (_error) { /* remove below releases the decoder */ }

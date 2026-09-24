@@ -1,11 +1,21 @@
 const MP4_HEADER_BYTES = 4096;
 
+function logVideoReadFailure(stage, error, sourcePath, level) {
+  let detail = String((error && (error.errMsg || error.message)) || 'Unknown error');
+  if (sourcePath) detail = detail.split(sourcePath).join('[selected video]');
+  const logger = level === 'warn' ? console.warn : console.error;
+  logger(`[video-info] ${stage} failed: ${detail.slice(0, 300)}`);
+}
+
 function getVideoInfo(sourcePath) {
   return new Promise((resolve, reject) => {
     wx.getVideoInfo({
       src: sourcePath,
       success: resolve,
-      fail: reject,
+      fail(error) {
+        logVideoReadFailure('wx.getVideoInfo', error, sourcePath, 'warn');
+        reject(error);
+      },
     });
   });
 }
@@ -19,7 +29,10 @@ function readVideoPrefix(sourcePath) {
       success(result) {
         resolve(result.data);
       },
-      fail: reject,
+      fail(error) {
+        logVideoReadFailure('FileSystemManager.readFile', error, sourcePath);
+        reject(error);
+      },
     });
   });
 }
@@ -95,11 +108,15 @@ async function inspectVideoSource(sourcePath, pickerInfo) {
     throw error;
   }
 
+  const videoInfoRequest = getVideoInfo(sourcePath)
+    .then((info) => ({ info, error: null }))
+    .catch((error) => ({ info: null, error }));
   const results = await Promise.all([
-    getVideoInfo(sourcePath),
+    videoInfoRequest,
     readVideoPrefix(sourcePath),
   ]);
-  const info = results[0];
+  const videoInfoResult = results[0];
+  const info = videoInfoResult.info || {};
   const header = results[1];
   const majorBrand = getMp4MajorBrand(header);
   const reportedType = String(info.type || '').toLowerCase();
@@ -118,6 +135,10 @@ async function inspectVideoSource(sourcePath, pickerInfo) {
     const error = new Error('无法读取视频时长或画面尺寸，请尝试其他 MP4 视频。');
     error.code = 'VIDEO_METADATA_UNAVAILABLE';
     throw error;
+  }
+
+  if (videoInfoResult.error) {
+    console.warn(`[video-info] using picker metadata (${width}x${height}, ${duration}s)`);
   }
 
   return {
